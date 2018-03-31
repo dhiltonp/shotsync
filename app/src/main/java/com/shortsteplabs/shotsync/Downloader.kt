@@ -1,16 +1,11 @@
-package com.shortsteplabs.shotsync.shotsync
+package com.shortsteplabs.shotsync
 
 import android.app.IntentService
 import android.content.Intent
 import android.content.Context
 import android.util.Log
-import com.android.volley.Request
 import com.android.volley.RequestQueue
-import com.android.volley.Response
 import com.android.volley.toolbox.*
-import com.android.volley.toolbox.RequestFuture
-import org.json.JSONObject
-import java.util.concurrent.TimeUnit
 
 
 /**
@@ -60,7 +55,7 @@ class Downloader : IntentService("Downloader") {
     }
 
     companion object {
-        private val ACTION_START_DOWNLOAD = "com.shortsteplabs.shotsync.shotsync.action.START_DOWNLOAD"
+        private val ACTION_START_DOWNLOAD = "com.shortsteplabs.shotsync.action.START_DOWNLOAD"
 
         fun startDownload(context: Context) {
             val intent = Intent(context, Downloader::class.java)

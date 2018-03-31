@@ -1,5 +1,6 @@
-package com.shortsteplabs.shotsync.shotsync
+package com.shortsteplabs.shotsync
 
+import com.shortsteplabs.shotsync.OlyEntry
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

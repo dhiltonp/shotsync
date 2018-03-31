@@ -7,7 +7,7 @@ apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion 26
     defaultConfig {
-        applicationId "com.shortsteplabs.shotsync.shotsync"
+        applicationId "com.shortsteplabs.shotsync"
         minSdkVersion 21
         targetSdkVersion 26
         versionCode 1

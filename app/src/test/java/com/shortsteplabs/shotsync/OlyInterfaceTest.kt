@@ -1,8 +1,7 @@
-package com.shortsteplabs.shotsync.shotsync
+package com.shortsteplabs.shotsync
 
+import com.shortsteplabs.shotsync.OlyInterface
 import org.junit.Test
-
-import org.junit.Assert.*
 
 /**
  * Created by david on 3/31/18.

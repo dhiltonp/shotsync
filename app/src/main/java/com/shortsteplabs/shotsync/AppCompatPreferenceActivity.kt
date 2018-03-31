@@ -1,4 +1,4 @@
-package com.shortsteplabs.shotsync.shotsync
+package com.shortsteplabs.shotsync
 
 import android.content.res.Configuration
 import android.os.Bundle

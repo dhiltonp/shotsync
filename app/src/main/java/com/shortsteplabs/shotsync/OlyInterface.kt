@@ -1,4 +1,4 @@
-package com.shortsteplabs.shotsync.shotsync
+package com.shortsteplabs.shotsync
 
 import android.util.Log
 import com.android.volley.Request
@@ -50,7 +50,7 @@ object OlyInterface {
     // TODO: better error handling
 
     fun Download(queue: RequestQueue) {
-        val dirs = listDir(queue,"/DCIM")
+        val dirs = listDir(queue, "/DCIM")
         val resources = listResources(queue, dirs)
         queueDownloads(queue, resources)
         //queueShutdown(queue)
@@ -87,7 +87,7 @@ object OlyInterface {
         Log.d(TAG, "reading $path")
         val response = future.get(300, TimeUnit.SECONDS)
         Log.d(TAG, "converting to file entries")
-        val entries = OlyInterface.getEntries(response)
+        val entries = getEntries(response)
         Log.d(TAG, "found ${entries.size} entries")
         return entries
     }

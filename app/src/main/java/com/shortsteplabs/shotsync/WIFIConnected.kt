@@ -1,4 +1,4 @@
-package com.shortsteplabs.shotsync.shotsync
+package com.shortsteplabs.shotsync
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -6,13 +6,7 @@ import android.content.Intent
 import android.net.NetworkInfo
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
-import android.os.SystemClock
 import android.util.Log
-import com.android.volley.Request
-import com.android.volley.Response
-import com.android.volley.toolbox.ImageRequest
-import com.android.volley.toolbox.StringRequest
-import com.android.volley.toolbox.Volley
 
 /**
  * Created by david on 3/30/18.
