@@ -8,6 +8,10 @@ import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.toolbox.*
+import com.android.volley.toolbox.RequestFuture
+import org.json.JSONObject
+import java.util.concurrent.TimeUnit
+
 
 /**
  * An [IntentService] subclass for handling asynchronous task requests in
@@ -20,8 +24,7 @@ import com.android.volley.toolbox.*
 class Downloader : IntentService("Downloader") {
     private val TAG = "Downloader"
     // intent:
-    //  receive that we have connected/disconnected
-    //  download files
+    //  download files (need to actually store them, maybe check for free space, too?)
     //  put notification of DL status in foreground
 
     var downloading = false
@@ -52,30 +55,7 @@ class Downloader : IntentService("Downloader") {
             downloading = true
 
             startQueue()
-
-            // list images
-
-            // dl images
-            val imageRequest = StringRequest(Request.Method.GET, "http://192.168.0.10/DCIM/117OLYMP/P3272208.ORF",
-                    Response.Listener<String> { response ->
-                        Log.d(TAG, "img downloaded, " + response.length + " bytes")
-                    },
-                    Response.ErrorListener {
-                        Log.d(TAG, "img failed to download!")
-                    })
-            imageRequest.tag = TAG
-            queue?.add(imageRequest)
-
-            // may have to also disconnect from the network to prevent having to enter password every time...
-            val stringRequest = StringRequest(Request.Method.GET, "http://192.168.0.10/exec_pwoff.cgi",
-                    Response.Listener<String> { response ->
-                        Log.d(TAG, "Camera off")
-                    },
-                    Response.ErrorListener {
-                        Log.d(TAG, "Failed to turn off camera!")
-                    })
-            imageRequest.tag = TAG
-            queue?.add(stringRequest)
+            OlyInterface.Download(queue!!)
         }
     }
 
