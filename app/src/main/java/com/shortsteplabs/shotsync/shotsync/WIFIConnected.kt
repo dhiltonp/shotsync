@@ -31,12 +31,6 @@ class WIFIConnected : BroadcastReceiver() {
                 Log.d(TAG, "detected olympus camera")
                 Downloader.startDownload(context)
             }
-        } else {
-            // we hit here lots when switching from one network to another;
-            // ~3 on disconnect, ~10 during AP association.
-            // We need to be robust to multiple entry/exit (or filter our intent better)
-            Log.d(TAG, "not connected")
-            Downloader.stopDownload(context)
         }
     }
 }

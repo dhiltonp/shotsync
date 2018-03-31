@@ -32,8 +32,6 @@ class Downloader : IntentService("Downloader") {
             val action = intent.action
             if (ACTION_START_DOWNLOAD == action) {
                 handleStartDownload()
-            } else if (ACTION_STOP_DOWNLOAD == action) {
-                handleStopDownload()
             }
         }
     }
@@ -81,28 +79,12 @@ class Downloader : IntentService("Downloader") {
         }
     }
 
-    private fun handleStopDownload() {
-        if (downloading) {
-            Log.d(TAG, "Stopping download")
-            downloading = false
-            queue?.cancelAll(TAG)
-            queue?.stop()
-        }
-    }
-
     companion object {
         private val ACTION_START_DOWNLOAD = "com.shortsteplabs.shotsync.shotsync.action.START_DOWNLOAD"
-        private val ACTION_STOP_DOWNLOAD = "com.shortsteplabs.shotsync.shotsync.action.STOP_DOWNLOAD"
 
         fun startDownload(context: Context) {
             val intent = Intent(context, Downloader::class.java)
             intent.action = ACTION_START_DOWNLOAD
-            context.startService(intent)
-        }
-
-        fun stopDownload(context: Context) {
-            val intent = Intent(context, Downloader::class.java)
-            intent.action = ACTION_STOP_DOWNLOAD
             context.startService(intent)
         }
     }
