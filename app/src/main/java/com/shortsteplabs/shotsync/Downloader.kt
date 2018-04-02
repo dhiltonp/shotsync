@@ -6,6 +6,10 @@ import android.content.Context
 import android.util.Log
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.*
+import android.support.v4.app.NotificationCompat
+import android.support.v4.app.NotificationManagerCompat
+
+
 
 
 /**
@@ -18,6 +22,13 @@ import com.android.volley.toolbox.*
  */
 class Downloader : IntentService("Downloader") {
     private val TAG = "Downloader"
+    private val CHANNEL_ID = "com.shortsteplabs.shotsync"
+    private val NOTIFICATION_ID = 21
+    // TODO:
+    // change to regular service, IntentService doesn't wait for volley to finish
+    // refactor so that Downloader drives pipeline+updates notifications+saves,
+    //  OlyInterface is just for camera-specific stuff.
+    // create notification helper class
     // intent:
     //  download files (need to actually store them, maybe check for free space, too?)
     //  put notification of DL status in foreground
@@ -49,9 +60,24 @@ class Downloader : IntentService("Downloader") {
             Log.d(TAG, "Starting download")
             downloading = true
 
+            val mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_stat_notify)
+                    .setContentTitle("snapsyncTitle")
+                    .setContentText("Checking for files")
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            startForeground( NOTIFICATION_ID, mBuilder.build())
+            Log.d(TAG, "notification started in foreground")
+
             startQueue()
             OlyInterface.Download(queue!!)
         }
+    }
+
+    override fun onDestroy() {
+        Log.d(TAG, "clearing notification")
+        val notificationManager = NotificationManagerCompat.from(this)
+        notificationManager.cancel(NOTIFICATION_ID)
+        super.onDestroy()
     }
 
     companion object {

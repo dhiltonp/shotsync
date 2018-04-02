@@ -1,7 +1,6 @@
 package com.shortsteplabs.shotsync
 
-import com.shortsteplabs.shotsync.OlyEntry
-import org.junit.Assert.assertEquals
+import org.junit.Assert.*
 import org.junit.Test
 
 /**
@@ -124,5 +123,27 @@ class OlyEntryTest {
         assertEquals(0, t0_59_00.second)
         assertEquals(0, t1_00_00.second)
         assertEquals(58, t23_59_58.second)
+    }
+
+    @Test
+    fun compareTo() {
+        val fileA = OlyEntry(",A,0,0,0,0")
+        val fileB = OlyEntry(",B,0,0,0,0")
+        assertTrue(t0_00_00 < t1_00_00)
+        assertTrue(jan1_2002 < jan1_2003)
+        assertTrue(fileA<fileB)
+
+        // date is more significant than time
+        val before = OlyEntry(",,0,0,0,1")
+        val after = OlyEntry(",,0,0,10,0")
+        assertTrue(before < after)
+
+        // time is more significant than filename
+        val fileA1 = OlyEntry(",A,0,0,0,1")
+        val fileB1 = OlyEntry(",B,0,0,0,0")
+        assertTrue(fileB1<fileA1)
+
+        // identical entries are identical
+        assertFalse(DIR<DIR)
     }
 }

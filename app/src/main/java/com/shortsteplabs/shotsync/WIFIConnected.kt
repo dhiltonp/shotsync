@@ -20,10 +20,13 @@ class WIFIConnected : BroadcastReceiver() {
         if (netInfo.isConnected) {
             val winfo = intent.getParcelableExtra<WifiInfo>(WifiManager.EXTRA_WIFI_INFO)
             Log.d(TAG, "connecting to " + winfo.bssid + ":" + winfo.ssid)
-            // or could use winfo.ssid?
+
             if (winfo.bssid.startsWith("90:b6:86")) {  // the first 6 mac address values indicate manufacturer
                 Log.d(TAG, "detected olympus camera")
                 Downloader.startDownload(context)
+            } else if (winfo.ssid.equals("\"LEDE\""))  {
+                Log.d(TAG, "detected LEDE network")
+                //Downloader.startDownload(context)
             }
         }
     }

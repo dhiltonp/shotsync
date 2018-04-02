@@ -12,8 +12,8 @@ import java.util.concurrent.TimeUnit
  * Created by david on 3/31/18.
  */
 
-class OlyEntry constructor(entry: String) {
-    val split = entry.split(',')
+class OlyEntry constructor(entry: String) : Comparable<OlyEntry> {
+    private val split = entry.split(',')
     val dirname = split[0]
     val filename = split[1]
     val extension = if (filename.contains('.')) filename.split('.')[1] else ""
@@ -43,6 +43,13 @@ class OlyEntry constructor(entry: String) {
     override fun toString(): String {
         return "$path: ${bytes}b, $year/$month/$day, $hour:$minute:$second,"
     }
+
+    override fun compareTo(other: OlyEntry) = when {
+        sortdate != other.sortdate -> sortdate - other.sortdate
+        sorttime != other.sorttime -> sorttime - other.sorttime
+        filename != other.filename -> filename.compareTo(other.filename)
+        else -> 0
+    }
 }
 
 object OlyInterface {
@@ -50,13 +57,15 @@ object OlyInterface {
     // TODO: better error handling
 
     fun Download(queue: RequestQueue) {
+        Log.d(TAG, "Download")
         val dirs = listDir(queue, "/DCIM")
         val resources = listResources(queue, dirs)
         queueDownloads(queue, resources)
         //queueShutdown(queue)
     }
 
-    private fun queueDownloads(queue: RequestQueue, resources: Array<OlyEntry>) {
+    private fun queueDownloads(queue: RequestQueue, resources: List<OlyEntry>) {
+        Log.d(TAG, "queueing downloads")
         for (resource in resources) {
             if (resource.year == 2018 && resource.month == 3 && resource.day == 31) {
                 Log.d(TAG, "should download $resource")
@@ -68,24 +77,26 @@ object OlyInterface {
     /**
      * returns all resources found in dirs, ordered from oldest to newest.
      */
-    private fun listResources(queue: RequestQueue, dirs: Array<OlyEntry>): Array<OlyEntry> {
-        val resources = ArrayList<OlyEntry>()
+    private fun listResources(queue: RequestQueue, dirs: List<OlyEntry>): List<OlyEntry> {
+        Log.d(TAG, "listResources")
+        val resources = mutableListOf<OlyEntry>()
 
         for (dir in dirs) {
             val result = listDir(queue, dir.path)
-            resources.plus(result)
+            resources.addAll(result)
         }
 
-        resources.sortedWith(compareBy(OlyEntry::sortdate, OlyEntry::sortdate, OlyEntry::filename))
-        return resources.toTypedArray()
+        resources.sort()
+        return resources.toList()
     }
 
-    private fun listDir(queue: RequestQueue, path: String): Array<OlyEntry> {
+    private fun listDir(queue: RequestQueue, path: String): List<OlyEntry> {
+        Log.d(TAG, "listDir")
         val future = RequestFuture.newFuture<String>()
         val downloadRequest2 = StringRequest(Request.Method.GET, "http://192.168.0.10"+path, future, future)
         queue.add(downloadRequest2)
         Log.d(TAG, "reading $path")
-        val response = future.get(300, TimeUnit.SECONDS)
+        val response = future.get(60, TimeUnit.SECONDS)
         Log.d(TAG, "converting to file entries")
         val entries = getEntries(response)
         Log.d(TAG, "found ${entries.size} entries")
@@ -93,6 +104,7 @@ object OlyInterface {
     }
 
     private fun queueDownload(queue: RequestQueue, file: OlyEntry) {
+        Log.d(TAG, "queueDownload")
         val downloadRequest = StringRequest(Request.Method.GET, "http://192.168.0.10"+file.path,
                 Response.Listener<String> { response ->
                     if (response.length != file.bytes) {
@@ -108,10 +120,11 @@ object OlyInterface {
         queue.add(downloadRequest)
     }
 
-    private fun queueShutdown(queue: RequestQueue) {
+    fun queueShutdown(queue: RequestQueue) {
+        Log.d(TAG, "queueShutdown")
         // may have to also disconnect from the network to prevent having to enter password every time?
         val shutdownRequest = StringRequest(Request.Method.GET, "http://192.168.0.10/exec_pwoff.cgi",
-                Response.Listener<String> { response ->
+                Response.Listener<String> { _ ->
                     Log.d(TAG, "Camera off")
                 },
                 Response.ErrorListener {
@@ -121,8 +134,9 @@ object OlyInterface {
         queue.add(shutdownRequest)
     }
 
-    fun getEntries(response: String): Array<OlyEntry> {
-        val entries = ArrayList<OlyEntry>()
+    fun getEntries(response: String): List<OlyEntry> {
+        Log.d(TAG, "Download")
+        val entries = mutableListOf<OlyEntry>()
         for (line in response.split("\n"))
         {
             if (line.startsWith("wlansd[")) {
@@ -130,6 +144,6 @@ object OlyInterface {
                 entries.add(OlyEntry(contents))
             }
         }
-        return entries.toTypedArray()
+        return entries.toList()
     }
 }

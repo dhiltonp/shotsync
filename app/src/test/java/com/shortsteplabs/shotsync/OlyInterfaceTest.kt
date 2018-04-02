@@ -1,12 +1,14 @@
 package com.shortsteplabs.shotsync
 
-import com.shortsteplabs.shotsync.OlyInterface
+import com.android.volley.RequestQueue
+import io.mockk.mockk
 import org.junit.Test
 
 /**
  * Created by david on 3/31/18.
  */
 class OlyInterfaceTest {
+
     @Test
     fun getEntries() {
         val data = """
@@ -21,4 +23,10 @@ blablabla
         assert(OlyInterface.getEntries(data).size == 4)
     }
 
+    @Test
+    fun queueShutdown() {
+        val queueMock = mockk<RequestQueue>()
+        OlyInterface.queueShutdown(queueMock)
+
+    }
 }
