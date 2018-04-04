@@ -8,6 +8,9 @@ import com.android.volley.RequestQueue
 import com.android.volley.toolbox.*
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
+import java.lang.Thread.sleep
+import com.android.volley.DefaultRetryPolicy
+import com.android.volley.RetryPolicy
 
 
 
@@ -69,6 +72,7 @@ class Downloader : IntentService("Downloader") {
             Log.d(TAG, "notification started in foreground")
 
             startQueue()
+            sleep(2000)
             OlyInterface.Download(queue!!)
         }
     }

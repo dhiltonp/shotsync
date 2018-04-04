@@ -1,6 +1,7 @@
 package com.shortsteplabs.shotsync
 
 import android.util.Log
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
@@ -93,12 +94,19 @@ object OlyInterface {
     private fun listDir(queue: RequestQueue, path: String): List<OlyEntry> {
         Log.d(TAG, "listDir")
         val future = RequestFuture.newFuture<String>()
-        val downloadRequest2 = StringRequest(Request.Method.GET, "http://192.168.0.10"+path, future, future)
+
+        val policy = DefaultRetryPolicy(60000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+        val downloadRequest2 = StringRequest(Request.Method.GET, "http://192.168.0.10/get_imglist.cgi?DIR="+path, future, future)
+        downloadRequest2.setRetryPolicy(policy)
+
         queue.add(downloadRequest2)
         Log.d(TAG, "reading $path")
         val response = future.get(60, TimeUnit.SECONDS)
         Log.d(TAG, "converting to file entries")
-        val entries = getEntries(response)
+
+
+        val split = response.trim().split("\r\n")
+        val entries = split.slice(1 until split.size).map { line -> OlyEntry(line) }
         Log.d(TAG, "found ${entries.size} entries")
         return entries
     }
