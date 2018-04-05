@@ -1,5 +1,7 @@
 package com.shortsteplabs.shotsync
 
+import android.os.Environment
+import android.os.StatFs
 import android.util.Log
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
@@ -7,6 +9,7 @@ import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.toolbox.RequestFuture
 import com.android.volley.toolbox.StringRequest
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 /**
@@ -111,15 +114,38 @@ object OlyInterface {
         return entries
     }
 
+    fun isStorageWritable(): Boolean {
+        return Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
+    }
+
+    fun bytesAvailable(): Long {
+        val stat = StatFs(Environment.getExternalStorageDirectory().getPath())
+        return stat.getBlockSizeLong() * stat.getBlockCountLong()
+    }
+//
+//    fun getStorageDir(String): File {
+//            // Get the directory for the user's public pictures directory.
+//            val file = File(Environment.getExternalStoragePublicDirectory(
+//                    Environment.DIRECTORY_PICTURES), albumName)
+//            if (!file?.mkdirs()) {
+//                Log.e(LOG_TAG, "Directory not created")
+//            }
+//            return file
+//        }
+//    }
+
     private fun queueDownload(queue: RequestQueue, file: OlyEntry) {
         Log.d(TAG, "queueDownload")
         val downloadRequest = StringRequest(Request.Method.GET, "http://192.168.0.10"+file.path,
                 Response.Listener<String> { response ->
                     if (response.length != file.bytes) {
                         Log.e(TAG, "${file.filename}: download vs. expected bytes don't match")
-                    }
+                    } else {
+                        Log.d(TAG, "${file.filename} downloaded, " + response.length + " bytes")
+                        if (isStorageWritable() && bytesAvailable() > file.bytes) {
 
-                    Log.d(TAG, "${file.filename} downloaded, " + response.length + " bytes")
+                        }
+                    }
                 },
                 Response.ErrorListener {
                     Log.d(TAG, "img failed to download!")
