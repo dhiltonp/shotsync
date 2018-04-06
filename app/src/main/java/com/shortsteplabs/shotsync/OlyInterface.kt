@@ -2,14 +2,21 @@ package com.shortsteplabs.shotsync
 
 import android.os.Environment
 import android.os.StatFs
+import android.os.SystemClock.sleep
 import android.util.Log
+import android.util.Xml
 import com.android.volley.DefaultRetryPolicy
+import com.android.volley.NoConnectionError
 import com.android.volley.Request
 import com.android.volley.RequestQueue
-import com.android.volley.Response
 import com.android.volley.toolbox.RequestFuture
 import com.android.volley.toolbox.StringRequest
-import java.io.File
+import org.xmlpull.v1.XmlPullParser
+import java.io.BufferedInputStream
+import java.io.InputStream
+import java.io.StringReader
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.concurrent.TimeUnit
 
 /**
@@ -58,31 +65,16 @@ class OlyEntry constructor(entry: String) : Comparable<OlyEntry> {
 
 object OlyInterface {
     private val TAG = "OlyInterface"
-    // TODO: better error handling
 
-    fun Download(queue: RequestQueue) {
-        Log.d(TAG, "Download")
-        val dirs = listDir(queue, "/DCIM")
-        val resources = listResources(queue, dirs)
-        queueDownloads(queue, resources)
-        //queueShutdown(queue)
-    }
-
-    private fun queueDownloads(queue: RequestQueue, resources: List<OlyEntry>) {
-        Log.d(TAG, "queueing downloads")
-        for (resource in resources) {
-            if (resource.year == 2018 && resource.month == 3 && resource.day == 31) {
-                Log.d(TAG, "should download $resource")
-                queueDownload(queue, resource)
-            }
-        }
-    }
+    class NoConnection: Exception()
 
     /**
      * returns all resources found in dirs, ordered from oldest to newest.
      */
-    private fun listResources(queue: RequestQueue, dirs: List<OlyEntry>): List<OlyEntry> {
+    fun listResources(queue: RequestQueue): List<OlyEntry> {
         Log.d(TAG, "listResources")
+        val dirs = OlyInterface.listDir(queue!!, "/DCIM")
+
         val resources = mutableListOf<OlyEntry>()
 
         for (dir in dirs) {
@@ -94,90 +86,96 @@ object OlyInterface {
         return resources.toList()
     }
 
-    private fun listDir(queue: RequestQueue, path: String): List<OlyEntry> {
-        Log.d(TAG, "listDir")
+    fun get(queue: RequestQueue, url: String, retries: Int=3, timeout: Long=60): String {
+        Log.d(TAG, "get $url")
         val future = RequestFuture.newFuture<String>()
 
-        val policy = DefaultRetryPolicy(60000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-        val downloadRequest2 = StringRequest(Request.Method.GET, "http://192.168.0.10/get_imglist.cgi?DIR="+path, future, future)
-        downloadRequest2.setRetryPolicy(policy)
+        val downloadRequest = StringRequest(Request.Method.GET, url, future, future)
+        downloadRequest.retryPolicy = DefaultRetryPolicy(
+                DefaultRetryPolicy.DEFAULT_TIMEOUT_MS,
+                retries,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+        downloadRequest.tag = TAG
 
-        queue.add(downloadRequest2)
-        Log.d(TAG, "reading $path")
-        val response = future.get(60, TimeUnit.SECONDS)
+        queue.add(downloadRequest)
+        // success vs. failure? 2 futures?
+        return future.get(timeout, TimeUnit.SECONDS)
+    }
+
+    fun fetch(queue: RequestQueue, url: String, retries: Int=3, timeout: Long=60): ByteArray {
+        Log.d(TAG, "get $url")
+        val future = RequestFuture.newFuture<ByteArray>()
+
+        val downloadRequest = InputStreamVolleyRequest(Request.Method.GET, url, future, future, null)
+        downloadRequest.retryPolicy = DefaultRetryPolicy(
+                DefaultRetryPolicy.DEFAULT_TIMEOUT_MS,
+                retries,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+        downloadRequest.tag = TAG
+
+        queue.add(downloadRequest)
+        // success vs. failure? 2 futures?
+        return future.get(timeout, TimeUnit.SECONDS)
+    }
+
+    private fun listDir(queue: RequestQueue, path: String): List<OlyEntry> {
+        Log.d(TAG, "listDir")
+        val response = get(queue, "http://192.168.0.10/get_imglist.cgi?DIR="+path)
         Log.d(TAG, "converting to file entries")
-
-
         val split = response.trim().split("\r\n")
         val entries = split.slice(1 until split.size).map { line -> OlyEntry(line) }
         Log.d(TAG, "found ${entries.size} entries")
         return entries
     }
 
-    fun isStorageWritable(): Boolean {
-        return Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
+
+
+    fun download(queue: RequestQueue, file: OlyEntry): ByteArray {
+        Log.d(TAG, "download")
+        return fetch(queue, "http://192.168.0.10"+file.path)
     }
 
-    fun bytesAvailable(): Long {
-        val stat = StatFs(Environment.getExternalStorageDirectory().getPath())
-        return stat.getBlockSizeLong() * stat.getBlockCountLong()
-    }
-//
-//    fun getStorageDir(String): File {
-//            // Get the directory for the user's public pictures directory.
-//            val file = File(Environment.getExternalStoragePublicDirectory(
-//                    Environment.DIRECTORY_PICTURES), albumName)
-//            if (!file?.mkdirs()) {
-//                Log.e(LOG_TAG, "Directory not created")
-//            }
-//            return file
-//        }
-//    }
-
-    private fun queueDownload(queue: RequestQueue, file: OlyEntry) {
-        Log.d(TAG, "queueDownload")
-        val downloadRequest = StringRequest(Request.Method.GET, "http://192.168.0.10"+file.path,
-                Response.Listener<String> { response ->
-                    if (response.length != file.bytes) {
-                        Log.e(TAG, "${file.filename}: download vs. expected bytes don't match")
-                    } else {
-                        Log.d(TAG, "${file.filename} downloaded, " + response.length + " bytes")
-                        if (isStorageWritable() && bytesAvailable() > file.bytes) {
-
-                        }
-                    }
-                },
-                Response.ErrorListener {
-                    Log.d(TAG, "img failed to download!")
-                })
-        downloadRequest.tag = TAG
-        queue.add(downloadRequest)
+    fun shutdown(queue: RequestQueue) {
+        Log.d(TAG, "shutdown")
+        val response = get(queue, "http://192.168.0.10/exec_pwoff.cgi")
+        Log.d(TAG, "shutdown: $response")
     }
 
-    fun queueShutdown(queue: RequestQueue) {
-        Log.d(TAG, "queueShutdown")
-        // may have to also disconnect from the network to prevent having to enter password every time?
-        val shutdownRequest = StringRequest(Request.Method.GET, "http://192.168.0.10/exec_pwoff.cgi",
-                Response.Listener<String> { _ ->
-                    Log.d(TAG, "Camera off")
-                },
-                Response.ErrorListener {
-                    Log.d(TAG, "Failed to turn off camera!")
-                })
-        shutdownRequest.tag = TAG
-        queue.add(shutdownRequest)
-    }
-
-    fun getEntries(response: String): List<OlyEntry> {
-        Log.d(TAG, "Download")
-        val entries = mutableListOf<OlyEntry>()
-        for (line in response.split("\n"))
-        {
-            if (line.startsWith("wlansd[")) {
-                val contents = line.split('"')[1]
-                entries.add(OlyEntry(contents))
+    /**
+     * attempt to connect to camera
+     * return true on success
+     */
+    fun connect(queue: RequestQueue, retries: Int=5): Boolean {
+        Log.d(TAG, "connect")
+        for (i in 1..retries) {
+            try {
+                return getCamInfo(queue) != ""
+            } catch (e: java.util.concurrent.ExecutionException) {
+                // no route to host sometimes happens? not sure why... Olympus app still works? confusing.
+                Log.d(TAG, e.toString())
+                sleep(2000)
+                continue
             }
         }
-        return entries.toList()
+        return false
+    }
+
+    fun getCamInfo(queue: RequestQueue): String {
+        val parser = Xml.newPullParser()
+        parser.setInput(StringReader(get(queue, "http://192.168.0.10/get_caminfo.cgi")))
+
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.name == "caminfo") {
+                parser.nextTag()
+                if (parser.name == "model") {
+                    if (parser.next() == XmlPullParser.TEXT) {
+                        return parser.text
+                    }
+                }
+            } else {
+                break
+            }
+        }
+        return ""
     }
 }

@@ -1,8 +1,10 @@
 package com.shortsteplabs.shotsync
 
+import android.Manifest
 import android.annotation.TargetApi
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.media.RingtoneManager
 import android.net.Uri
@@ -14,6 +16,7 @@ import android.preference.PreferenceActivity
 import android.preference.PreferenceFragment
 import android.preference.PreferenceManager
 import android.preference.RingtonePreference
+import android.support.v4.app.ActivityCompat
 import android.text.TextUtils
 import android.view.MenuItem
 
@@ -29,9 +32,48 @@ import android.view.MenuItem
  */
 class SettingsActivity : AppCompatPreferenceActivity() {
 
+    val WRITE_EXTERNAL = 1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        requestFilePermissions()
+        startDownload()
         setupActionBar()
+    }
+
+    fun startDownload() {
+        val i = Intent(this, ConnectReceiver::class.java)
+        i.action = ConnectReceiver.MANUAL_START
+        sendBroadcast(i)
+    }
+
+
+    fun requestFilePermissions() {
+        // TODO: handle the callback
+        val permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    WRITE_EXTERNAL
+            )
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                   permissions: Array<String>, grantResults: IntArray) {
+        when (requestCode) {
+            WRITE_EXTERNAL -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startDownload()
+                }
+            }
+            else -> {
+            }
+        }
     }
 
     /**

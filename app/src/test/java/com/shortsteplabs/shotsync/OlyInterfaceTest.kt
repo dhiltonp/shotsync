@@ -26,7 +26,7 @@ blablabla
     @Test
     fun queueShutdown() {
         val queueMock = mockk<RequestQueue>()
-        OlyInterface.queueShutdown(queueMock)
+        OlyInterface.shutdown(queueMock)
 
     }
 }

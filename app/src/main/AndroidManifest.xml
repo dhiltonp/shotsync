@@ -30,7 +30,7 @@
         </receiver>
 
         <service
-            android:name=".Downloader"
+            android:name=".DownloaderService"
             android:exported="false" />
     </application>
 
