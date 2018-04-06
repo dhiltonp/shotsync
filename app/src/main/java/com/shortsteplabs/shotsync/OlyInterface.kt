@@ -1,22 +1,32 @@
+/**
+Copyright (C) 2018  David Hilton <david.hilton.p@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.shortsteplabs.shotsync
 
-import android.os.Environment
-import android.os.StatFs
 import android.os.SystemClock.sleep
 import android.util.Log
 import android.util.Xml
 import com.android.volley.DefaultRetryPolicy
-import com.android.volley.NoConnectionError
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.RequestFuture
 import com.android.volley.toolbox.StringRequest
 import org.xmlpull.v1.XmlPullParser
-import java.io.BufferedInputStream
-import java.io.InputStream
 import java.io.StringReader
-import java.net.HttpURLConnection
-import java.net.URL
 import java.util.concurrent.TimeUnit
 
 /**
