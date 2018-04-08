@@ -24,10 +24,6 @@ import android.os.StatFs
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
 import android.util.Log
-import com.android.volley.RequestQueue
-import com.android.volley.toolbox.BasicNetwork
-import com.android.volley.toolbox.DiskBasedCache
-import com.android.volley.toolbox.HurlStack
 import java.io.File
 import java.util.*
 
@@ -43,7 +39,8 @@ import java.util.*
 class DownloaderService : ManualIntentService("DownloaderService") {
     private val TAG = "DownloaderService"
     private val CHANNEL_ID = TAG
-    private val NOTIFICATION_ID = 21
+    private val ERROR_NOTIFICATION_ID = 20
+    private val DOWNLOAD_NOTIFICATION_ID = 21
     // TODO:
     // change to regular service, IntentService doesn't wait for volley to finish
     // refactor so that DownloaderService drives pipeline+updates notifications+saves,
@@ -54,7 +51,6 @@ class DownloaderService : ManualIntentService("DownloaderService") {
     //  put notification of DL status in foreground
 
     var downloading = false
-    var queue: RequestQueue? = null
 
     override fun onHandleIntent(intent: Intent?) {
         if (intent != null) {
@@ -65,50 +61,54 @@ class DownloaderService : ManualIntentService("DownloaderService") {
         }
     }
 
-    private fun startQueue() {
-        if (queue == null) {
-            val cache = DiskBasedCache(cacheDir, 1024 * 1024)
-            val network = BasicNetwork(HurlStack())
-            queue = RequestQueue(cache, network, 1).apply {
-                start()
-            }
-        }
-    }
+    private fun downloadLoop(client: HttpHelper) {
+        val camera = OlyInterface.getCamInfo(client)
+        downloadNotification("Starting Download", "Connected to $camera, discovering new files.")
 
-    private fun downloadLoop() {
-        val camera = OlyInterface.getCamInfo(queue!!)
-        setNotification("Starting Download", "Connected to $camera, discovering new files.")
-
-        // which resources to downloadLoop?
-        val new_resources = mutableListOf<OlyEntry>()
+        // which resources to download?
+        val newResources = mutableListOf<OlyEntry>()
         val now = Date()
-        for (resource in OlyInterface.listResources(queue!!)) {
-            if (resource.year == 1900+now.year && resource.month == now.month+1 && resource.day == now.day+1 &&
+        for (resource in OlyInterface.listResources(client)) {
+            if (resource.year == 1900+now.year && resource.month == now.month+1 && resource.day == now.day+1 && // now.date
                     resource.extension == "ORF") {
-                new_resources.add(resource)
+                newResources.add(resource)
             }
         }
 
         var i = 0
-        for (resource in new_resources) {
+        for (resource in newResources) {
             i += 1
-            setNotification("Downloading from $camera", "$i/${new_resources.size} new: ${resource.filename}")
-            val contents = OlyInterface.download(queue!!, resource)
-            if (contents.size != resource.bytes) {
-                Log.e(TAG, "${resource.filename}: downloadLoop vs. expected bytes don't match")
+            downloadNotification("Downloading from $camera", "$i/${newResources.size} new: ${resource.filename}")
+
+            val partial = getPublicFile(resource.filename+".partial")
+            if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
+                errorNotification("Error", "Storage permissions not granted")
+            } else if (resource.bytes > bytesAvailable()) {
+                errorNotification("Error", "${resource.filename} cannot fit on storage")
+            } else if (resource.bytes > 4294967295) { // 4GB, 2^32-1. TODO: detect actual limit
+                errorNotification("Error", "${resource.filename} exceeds 4GB limit")
             } else {
-                Log.d(TAG, "${resource.filename} downloaded, " + contents.size + " bytes")
-                if (isStorageWritable() && bytesAvailable() > resource.bytes) {
-                    // TODO: actually save... is there a way to DL direct to disk? videos are huge...
-                    val f = getPublicFile(resource.filename)
-                    f.writeBytes(contents)
-                }
+                // download file to tmp
+                OlyInterface.download(client, resource, partial)
+                moveDownload(resource, partial)
             }
         }
-        setNotification("Downloading from $camera", "$i downloaded, shutting down.")
+        downloadNotification("Downloading from $camera", "$i downloaded, shutting down.")
 
-        OlyInterface.shutdown(queue!!)
+        OlyInterface.shutdown(client)
         stopSelf()
+    }
+
+    private fun moveDownload(resource: OlyEntry, partial: File) {
+        // verify download, move to position, update entry
+        if (partial.length() != resource.bytes) {
+            Log.e(TAG, "${resource.filename}: downloaded vs. expected bytes don't match")
+        } else {
+            val file = getPublicFile(resource.filename)
+            partial.renameTo(file)
+            
+            Log.d(TAG, "${resource.filename} downloaded, " + partial.length() + " bytes")
+        }
     }
 
     private fun handleStartDownload() {
@@ -116,58 +116,68 @@ class DownloaderService : ManualIntentService("DownloaderService") {
             Log.d(TAG, "Starting downloadLoop")
             downloading = true
 
-            setNotification("Starting Download", "Connecting to camera.")
-            startQueue()
+            downloadNotification("Starting Download", "Connecting to camera.")
+
+//            startQueue()
+            val client = HttpHelper()
 
             // TODO: do the following asynchronously, stopSelf when it stops running. also allow cancellation.
-            if (!OlyInterface.connect(queue!!)) {
+            if (!OlyInterface.connect(client)) {
                 stopSelf()
                 return
             }
 
-            downloadLoop()
+            downloadLoop(client)
         }
-    }
-
-    fun isStorageWritable(): Boolean {
-        return Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
     }
 
     fun bytesAvailable(): Long {
-        val stat = StatFs(Environment.getExternalStorageDirectory().getPath())
-        return stat.getBlockSizeLong() * stat.getBlockCountLong()
+        val stat = StatFs(Environment.getExternalStorageDirectory().path)
+        return stat.blockSizeLong * stat.blockCountLong
     }
 
-    fun getPublicFile(filename: String): File {
-        val dir = File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "ShotSync")
-        if (!dir.mkdirs()) {
-            Log.e(TAG, "Directory not created")
+    fun getPublicFile(filename: String, dir: String=Environment.DIRECTORY_PICTURES): File {
+        val path = File(Environment.getExternalStoragePublicDirectory(dir), "ShotSync")
+        if (!path.exists()) {
+            if (!path.mkdirs()) {
+                Log.e(TAG,"Directory not created; already exists")
+            }
         }
-        return File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "ShotSync/$filename")
+        return File(Environment.getExternalStoragePublicDirectory(dir), "ShotSync/$filename")
     }
 
-    private fun setNotification(title: String, text: String) {
-        Log.i(TAG, "setNotification: $title, $text")
+    private fun errorNotification(title: String, text: String) {
+        Log.i(TAG, "errorNotification: $title, $text")
+        val mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_stat_notify)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setOnlyAlertOnce(true)
+        startForeground(ERROR_NOTIFICATION_ID, mBuilder.build())
+    }
+
+    private fun downloadNotification(title: String, text: String) {
+        Log.i(TAG, "downloadNotification: $title, $text")
         val mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_stat_notify)
                 .setContentTitle(title)
                 .setContentText(text)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setOnlyAlertOnce(true)
-        startForeground(NOTIFICATION_ID, mBuilder.build())
+        startForeground(DOWNLOAD_NOTIFICATION_ID, mBuilder.build())
     }
 
     override fun onDestroy() {
         Log.d(TAG, "clearing notification")
         val notificationManager = NotificationManagerCompat.from(this)
-        notificationManager.cancel(NOTIFICATION_ID)
+        notificationManager.cancel(DOWNLOAD_NOTIFICATION_ID)
         super.onDestroy()
     }
 
     companion object {
         private val ACTION_START_DOWNLOAD = "com.shortsteplabs.shotsync.action.START_DOWNLOAD"
+        private val WIFI = "wifi"
 
         fun startDownload(context: Context) {
             val intent = Intent(context, DownloaderService::class.java)
