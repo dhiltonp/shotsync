@@ -37,10 +37,6 @@ import java.util.*
  * helper methods.
  */
 class DownloaderService : ManualIntentService("DownloaderService") {
-    private val TAG = "DownloaderService"
-    private val CHANNEL_ID = TAG
-    private val ERROR_NOTIFICATION_ID = 20
-    private val DOWNLOAD_NOTIFICATION_ID = 21
     // TODO:
     // change to regular service, IntentService doesn't wait for volley to finish
     // refactor so that DownloaderService drives pipeline+updates notifications+saves,
@@ -106,7 +102,6 @@ class DownloaderService : ManualIntentService("DownloaderService") {
         } else {
             val file = getPublicFile(resource.filename)
             partial.renameTo(file)
-            
             Log.d(TAG, "${resource.filename} downloaded, " + partial.length() + " bytes")
         }
     }
@@ -118,7 +113,6 @@ class DownloaderService : ManualIntentService("DownloaderService") {
 
             downloadNotification("Starting Download", "Connecting to camera.")
 
-//            startQueue()
             val client = HttpHelper()
 
             // TODO: do the following asynchronously, stopSelf when it stops running. also allow cancellation.
@@ -133,12 +127,12 @@ class DownloaderService : ManualIntentService("DownloaderService") {
         }
     }
 
-    fun bytesAvailable(): Long {
+    private fun bytesAvailable(): Long {
         val stat = StatFs(Environment.getExternalStorageDirectory().path)
         return stat.blockSizeLong * stat.blockCountLong
     }
 
-    fun getPublicFile(filename: String, dir: String=Environment.DIRECTORY_PICTURES): File {
+    private fun getPublicFile(filename: String, dir: String=Environment.DIRECTORY_PICTURES): File {
         val path = File(Environment.getExternalStoragePublicDirectory(dir), "ShotSync")
         if (!path.exists()) {
             if (!path.mkdirs()) {
@@ -156,7 +150,8 @@ class DownloaderService : ManualIntentService("DownloaderService") {
                 .setContentText(text)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setOnlyAlertOnce(true)
-        startForeground(ERROR_NOTIFICATION_ID, mBuilder.build())
+        val notificationMgr = NotificationManagerCompat.from(this)
+        notificationMgr.notify(ERROR_NOTIFICATION_TAG, errorID++, mBuilder.build())
     }
 
     private fun downloadNotification(title: String, text: String) {
@@ -178,6 +173,12 @@ class DownloaderService : ManualIntentService("DownloaderService") {
     }
 
     companion object {
+        private val TAG = "DownloaderService"
+        private val CHANNEL_ID = TAG
+        private val DOWNLOAD_NOTIFICATION_ID = 21
+        private val ERROR_NOTIFICATION_TAG = TAG+"error notification"
+        private var errorID = 1_234_789
+
         private val ACTION_START_DOWNLOAD = "com.shortsteplabs.shotsync.action.START_DOWNLOAD"
         private val WIFI = "wifi"
 

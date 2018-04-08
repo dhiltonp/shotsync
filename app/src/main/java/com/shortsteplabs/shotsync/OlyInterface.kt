@@ -164,6 +164,7 @@ object OlyInterface {
         for (i in 1..retries) {
             try {
                 getCamInfo(client)
+                break
             } catch (e: HttpHelper.NoConnection) {
                 Log.d(TAG, e.toString())
                 if (i < retries) {

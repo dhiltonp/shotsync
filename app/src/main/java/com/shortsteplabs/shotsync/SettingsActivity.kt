@@ -31,6 +31,7 @@ import android.preference.*
 import android.support.v4.app.ActivityCompat
 import android.text.TextUtils
 import android.view.MenuItem
+import com.shortsteplabs.shotsync.ConnectReceiver.Companion.requestDownload
 
 /**
  * A [PreferenceActivity] that presents a set of application settings. On
@@ -50,16 +51,9 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         super.onCreate(savedInstanceState)
 
         requestFilePermissions()
-        startDownload()
+        requestDownload(this)
         setupActionBar()
     }
-
-    fun startDownload() {
-        val i = Intent(this, ConnectReceiver::class.java)
-        i.action = ConnectReceiver.MANUAL_START
-        sendBroadcast(i)
-    }
-
 
     fun requestFilePermissions() {
         // TODO: handle the callback
@@ -80,7 +74,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         when (requestCode) {
             WRITE_EXTERNAL -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startDownload()
+                    requestDownload(this)
                 }
             }
             else -> {

@@ -37,6 +37,12 @@ class ConnectReceiver : BroadcastReceiver() {
     private val TAG = "ConnectReceiver"
     companion object {
         val MANUAL_START = "manual start"
+
+        fun requestDownload(context: Context) {
+            val i = Intent(context, ConnectReceiver::class.java)
+            i.action = MANUAL_START
+            context.sendBroadcast(i)
+        }
     }
 
     private class NoWifi : Exception()
