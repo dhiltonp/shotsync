@@ -61,38 +61,48 @@ class DownloaderService : ManualIntentService("DownloaderService") {
         val camera = OlyInterface.getCamInfo(client)
         downloadNotification("Starting Download", "Connected to $camera, discovering new files.")
 
-        // which resources to download?
-        val newResources = mutableListOf<OlyEntry>()
-        val now = Date()
-        for (resource in OlyInterface.listResources(client)) {
-            if (resource.year == 1900+now.year && resource.month == now.month+1 && resource.day == now.day+1 && // now.date
-                    resource.extension == "ORF") {
-                newResources.add(resource)
+        var toDownload = 0
+        var downloaded = 0
+        var currentFilename = ""
+        try {
+
+            // which resources to download?
+            val newResources = mutableListOf<OlyEntry>()
+            val now = Date()
+            for (resource in OlyInterface.listResources(client)) {
+                if (resource.year == 1900 + now.year && resource.month == now.month + 1 && resource.day == now.day + 1 && // now.date
+                        resource.extension == "ORF") {
+                    newResources.add(resource)
+                }
             }
-        }
 
-        var i = 0
-        for (resource in newResources) {
-            i += 1
-            downloadNotification("Downloading from $camera", "$i/${newResources.size} new: ${resource.filename}")
+            toDownload += newResources.size
+            for (resource in newResources) {
+                downloaded++
+                downloadNotification("Downloading from $camera", "$downloaded/$toDownload new: ${resource.filename}")
 
-            val partial = getPublicFile(resource.filename+".partial")
-            if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
-                errorNotification("Error", "Storage permissions not granted")
-            } else if (resource.bytes > bytesAvailable()) {
-                errorNotification("Error", "${resource.filename} cannot fit on storage")
-            } else if (resource.bytes > 4294967295) { // 4GB, 2^32-1. TODO: detect actual limit
-                errorNotification("Error", "${resource.filename} exceeds 4GB limit")
-            } else {
-                // download file to tmp
-                OlyInterface.download(client, resource, partial)
-                moveDownload(resource, partial)
+                val partial = getPublicFile(resource.filename + ".partial")
+                if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
+                    errorNotification("Error", "Storage permissions not granted")
+                } else if (resource.bytes > bytesAvailable()) {
+                    errorNotification("Error", "${resource.filename} cannot fit on storage")
+                } else if (resource.bytes > 4294967295) { // 4GB, 2^32-1. TODO: detect actual limit
+                    errorNotification("Error", "${resource.filename} exceeds 4GB limit")
+                } else {
+                    // download file to tmp
+                    OlyInterface.download(client, resource, partial)
+                    moveDownload(resource, partial)
+                }
             }
-        }
-        downloadNotification("Downloading from $camera", "$i downloaded, shutting down.")
+            downloadNotification("Downloading from $camera", "$downloaded downloaded, shutting down.")
 
-        OlyInterface.shutdown(client)
-        stopSelf()
+            OlyInterface.shutdown(client)
+            stopSelf()
+        } catch (e: HttpHelper.NoConnection) {
+            errorNotification("Download from $camera interrupted", "$downloaded/$toDownload downloaded")
+        } finally {
+            stopSelf()
+        }
     }
 
     private fun moveDownload(resource: OlyEntry, partial: File) {
@@ -120,10 +130,11 @@ class DownloaderService : ManualIntentService("DownloaderService") {
                 OlyInterface.connect(client)
                 downloadLoop(client)
             } catch (e: HttpHelper.NoConnection) {
-            } finally {
+                errorNotification("Download stopped", "Unable to connect")
                 stopSelf()
                 return
             }
+
         }
     }
 
