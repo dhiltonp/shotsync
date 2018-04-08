@@ -127,7 +127,7 @@ object OlyInterface {
     private val TAG = "OlyInterface"
 
     /**
-     * returns all resources found in dirs, ordered from oldest to newest.
+     * returns all resources found, ordered from oldest to newest.
      */
     fun listResources(client: HttpHelper): List<OlyEntry> {
         Log.d(TAG, "listResources")
@@ -144,19 +144,6 @@ object OlyInterface {
         return resources.toList()
     }
 
-
-    private fun listDir(client: HttpHelper, path: String): List<OlyEntry> {
-        Log.d(TAG, "listDir")
-        val response = client.get("http://192.168.0.10/get_imglist.cgi?DIR="+path)
-        Log.d(TAG, "converting to file entries")
-        val split = response.trim().split("\r\n")
-        val entries = split.slice(1 until split.size).map { line -> OlyEntry(line) }
-        Log.d(TAG, "found ${entries.size} entries")
-        return entries
-    }
-
-
-
     fun download(client: HttpHelper, resource: OlyEntry, file: File) {
         Log.d(TAG, "download")
         client.fetch("http://192.168.0.10"+ resource.path, file)
@@ -170,21 +157,23 @@ object OlyInterface {
 
     /**
      * attempt to connect to camera
-     * return true on success
+     * raise NoConnection on failure
      */
-    fun connect(client: HttpHelper, retries: Int=5): Boolean {
+    fun connect(client: HttpHelper, retries: Int=5) {
         Log.d(TAG, "connect")
         for (i in 1..retries) {
             try {
-                return getCamInfo(client) != ""
-            } catch (e: java.util.concurrent.ExecutionException) {
-                // no route to host sometimes happens. got to add a custom socket
+                getCamInfo(client)
+            } catch (e: HttpHelper.NoConnection) {
                 Log.d(TAG, e.toString())
-                sleep(2000)
-                continue
+                if (i < retries) {
+                    sleep(2000)
+                    continue
+                } else {
+                    throw e
+                }
             }
         }
-        return false
     }
 
     fun getCamInfo(client: HttpHelper): String {
@@ -204,5 +193,15 @@ object OlyInterface {
             }
         }
         return ""
+    }
+
+    private fun listDir(client: HttpHelper, path: String): List<OlyEntry> {
+        Log.d(TAG, "listDir")
+        val response = client.get("http://192.168.0.10/get_imglist.cgi?DIR="+path)
+        Log.d(TAG, "converting to file entries")
+        val split = response.trim().split("\r\n")
+        val entries = split.slice(1 until split.size).map { line -> OlyEntry(line) }
+        Log.d(TAG, "found ${entries.size} entries")
+        return entries
     }
 }

@@ -122,12 +122,14 @@ class DownloaderService : ManualIntentService("DownloaderService") {
             val client = HttpHelper()
 
             // TODO: do the following asynchronously, stopSelf when it stops running. also allow cancellation.
-            if (!OlyInterface.connect(client)) {
+            try {
+                OlyInterface.connect(client)
+                downloadLoop(client)
+            } catch (e: HttpHelper.NoConnection) {
+            } finally {
                 stopSelf()
                 return
             }
-
-            downloadLoop(client)
         }
     }
 
