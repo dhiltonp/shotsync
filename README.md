@@ -11,3 +11,4 @@ downloadLoop on app foreground, not just on startup
 downloadLoop - add 'concurrent' mode (then add switching via the notification)
 remote - add remote activity
 make files show up in 'Images'? or under 'Pictures'?
+add deletion (including from mediastore) and storage cap setting

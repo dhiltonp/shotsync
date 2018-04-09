@@ -17,13 +17,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 package com.shortsteplabs.shotsync
 
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.os.Environment
 import android.os.StatFs
+import android.provider.MediaStore.Images.ImageColumns.*
+import android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+import android.provider.MediaStore.MediaColumns.DATA
+import android.provider.MediaStore.MediaColumns.DISPLAY_NAME
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
 import android.util.Log
+import android.webkit.MimeTypeMap
 import java.io.File
 import java.util.*
 
@@ -70,7 +76,7 @@ class DownloaderService : ManualIntentService("DownloaderService") {
             val newResources = mutableListOf<OlyEntry>()
             val now = Date()
             for (resource in OlyInterface.listResources(client)) {
-                if (resource.year == 1900 + now.year && resource.month == now.month + 1 && resource.day == now.day + 1 && // now.date
+                if (resource.year == 1900 + now.year && resource.month == now.month + 1 && resource.day == now.date &&
                         resource.extension == "ORF") {
                     newResources.add(resource)
                 }
@@ -91,7 +97,8 @@ class DownloaderService : ManualIntentService("DownloaderService") {
                 } else {
                     // download file to tmp
                     OlyInterface.download(client, resource, partial)
-                    moveDownload(resource, partial)
+                    val file = moveDownload(resource, partial)
+                    registerFile(resource, file!!)
                 }
             }
             downloadNotification("Downloading from $camera", "$downloaded downloaded, shutting down.")
@@ -105,14 +112,30 @@ class DownloaderService : ManualIntentService("DownloaderService") {
         }
     }
 
-    private fun moveDownload(resource: OlyEntry, partial: File) {
+    private fun registerFile(resource: OlyEntry, file: File) {
+        val values = ContentValues()
+        values.put(DATA, file.path)
+        values.put(DISPLAY_NAME, file.name)
+        values.put(TITLE, file.name)
+        values.put(IS_PRIVATE, false)
+        values.put(DATE_TAKEN, resource.timestamp)
+        values.put(MIME_TYPE, MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension))
+        values.put(SIZE, file.length())
+        // TODO: add LATITUDE, LONGITUDE, ORIENTATION, WIDTH, HEIGHT... THUMBNAIL <- may help strava not crash?
+
+        this.contentResolver.insert(EXTERNAL_CONTENT_URI, values)
+    }
+
+    private fun moveDownload(resource: OlyEntry, partial: File): File? {
         // verify download, move to position, update entry
         if (partial.length() != resource.bytes) {
             Log.e(TAG, "${resource.filename}: downloaded vs. expected bytes don't match")
+            return null
         } else {
             val file = getPublicFile(resource.filename)
             partial.renameTo(file)
             Log.d(TAG, "${resource.filename} downloaded, " + partial.length() + " bytes")
+            return file
         }
     }
 

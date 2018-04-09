@@ -23,7 +23,7 @@ import android.util.Xml
 import org.xmlpull.v1.XmlPullParser
 import java.io.File
 import java.io.StringReader
-
+import java.util.*
 
 
 /*
@@ -109,7 +109,8 @@ class OlyEntry constructor(entry: String) : Comparable<OlyEntry> {
     val minute = (sorttime % 2048) / 32
     val second = (sorttime % 32) * 2
 
-    // TODO: put the above into a standard date/time object
+    // TODO: account for last time zone set
+    val timestamp = GregorianCalendar(year, month, day, hour, minute, second).timeInMillis
 
     override fun toString(): String {
         return "$path: ${bytes}b, $year/$month/$day, $hour:$minute:$second,"
