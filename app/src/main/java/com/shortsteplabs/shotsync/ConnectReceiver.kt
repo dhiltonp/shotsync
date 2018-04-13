@@ -64,7 +64,7 @@ class ConnectReceiver : BroadcastReceiver() {
     }
 
     fun bindNetwork(context: Context, network: Network) {
-        if (Build.VERSION.SDK_INT > 23) {
+        if (Build.VERSION.SDK_INT >= 23) {
             val mgr = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             mgr.bindProcessToNetwork(network)
         } else {
@@ -88,8 +88,7 @@ class ConnectReceiver : BroadcastReceiver() {
         val connMgr = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         for (network in connMgr.allNetworks) {
             val netInfo = connMgr.getNetworkInfo(network)
-            if (netInfo.type == ConnectivityManager.TYPE_WIFI &&
-                    netInfo.isConnected) {
+            if (netInfo.type == ConnectivityManager.TYPE_WIFI && netInfo.isConnected) {
                 Log.d(TAG, "WIFI connected")
                 val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
                 return ConnectionInfo(wifiManager.connectionInfo, network)

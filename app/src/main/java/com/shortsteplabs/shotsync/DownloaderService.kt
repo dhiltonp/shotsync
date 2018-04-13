@@ -65,7 +65,7 @@ class DownloaderService : ManualIntentService("DownloaderService") {
 
     private fun downloadLoop(client: HttpHelper) {
         val camera = OlyInterface.getCamInfo(client)
-        downloadNotification("Starting Download", "Connected to $camera, discovering new files.")
+        statusNotification("Starting Download", "Connected to $camera, discovering new files.")
 
         var toDownload = 0
         var downloaded = 0
@@ -85,28 +85,37 @@ class DownloaderService : ManualIntentService("DownloaderService") {
             toDownload += newResources.size
             for (resource in newResources) {
                 downloaded++
-                downloadNotification("Downloading from $camera", "$downloaded/$toDownload new: ${resource.filename}")
+                statusNotification("Downloading from $camera", "$downloaded/$toDownload new: ${resource.filename}")
 
-                val partial = getPublicFile(resource.filename + ".partial")
                 if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
-                    errorNotification("Error", "Storage permissions not granted")
+                    clearableNotification("Error", "Storage permissions not granted")
                 } else if (resource.bytes > bytesAvailable()) {
-                    errorNotification("Error", "${resource.filename} cannot fit on storage")
+                    clearableNotification("Error", "${resource.filename} cannot fit on storage")
                 } else if (resource.bytes > 4294967295) { // 4GB, 2^32-1. TODO: detect actual limit
-                    errorNotification("Error", "${resource.filename} exceeds 4GB limit")
+                    clearableNotification("Error", "${resource.filename} exceeds 4GB limit")
                 } else {
                     // download file to tmp
-                    OlyInterface.download(client, resource, partial)
-                    val file = moveDownload(resource, partial)
-                    registerFile(resource, file!!)
+                    var partial: File
+                    for (i in 0 until 3) {
+                        partial = getPublicFile(resource.filename + ".partial")
+                        OlyInterface.download(client, resource, partial)
+                        if (partial.length() != resource.bytes) {
+                            Log.e(TAG, "${resource.filename}: downloaded vs. expected bytes don't match")
+                        } else {
+                            val file = moveDownload(resource, partial)
+                            registerFile(resource, file)
+                            break
+                        }
+                    }
+
                 }
             }
-            downloadNotification("Downloading from $camera", "$downloaded downloaded, shutting down.")
+            clearableNotification("Downloading from $camera", "$downloaded downloaded, shutting down.")
 
             OlyInterface.shutdown(client)
             stopSelf()
         } catch (e: HttpHelper.NoConnection) {
-            errorNotification("Download from $camera interrupted", "$downloaded/$toDownload downloaded")
+            clearableNotification("Download from $camera interrupted", "$downloaded/$toDownload downloaded")
         } finally {
             stopSelf()
         }
@@ -126,17 +135,12 @@ class DownloaderService : ManualIntentService("DownloaderService") {
         this.contentResolver.insert(EXTERNAL_CONTENT_URI, values)
     }
 
-    private fun moveDownload(resource: OlyEntry, partial: File): File? {
+    private fun moveDownload(resource: OlyEntry, partial: File): File {
         // verify download, move to position, update entry
-        if (partial.length() != resource.bytes) {
-            Log.e(TAG, "${resource.filename}: downloaded vs. expected bytes don't match")
-            return null
-        } else {
-            val file = getPublicFile(resource.filename)
-            partial.renameTo(file)
-            Log.d(TAG, "${resource.filename} downloaded, " + partial.length() + " bytes")
-            return file
-        }
+        val file = getPublicFile(resource.filename)
+        Log.d(TAG, "${resource.filename} downloaded, " + partial.length() + " bytes")
+        partial.renameTo(file)
+        return file
     }
 
     private fun handleStartDownload() {
@@ -144,7 +148,7 @@ class DownloaderService : ManualIntentService("DownloaderService") {
             Log.d(TAG, "Starting downloadLoop")
             downloading = true
 
-            downloadNotification("Starting Download", "Connecting to camera.")
+            statusNotification("Starting Download", "Connecting to camera.")
 
             val client = HttpHelper()
 
@@ -153,7 +157,7 @@ class DownloaderService : ManualIntentService("DownloaderService") {
                 OlyInterface.connect(client)
                 downloadLoop(client)
             } catch (e: HttpHelper.NoConnection) {
-                errorNotification("Download stopped", "Unable to connect")
+                clearableNotification("Download stopped", "Unable to connect")
                 stopSelf()
                 return
             }
@@ -176,8 +180,8 @@ class DownloaderService : ManualIntentService("DownloaderService") {
         return File(Environment.getExternalStoragePublicDirectory(dir), "ShotSync/$filename")
     }
 
-    private fun errorNotification(title: String, text: String) {
-        Log.i(TAG, "errorNotification: $title, $text")
+    private fun clearableNotification(title: String, text: String) {
+        Log.i(TAG, "clearableNotification: $title, $text")
         val mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_stat_notify)
                 .setContentTitle(title)
@@ -188,8 +192,8 @@ class DownloaderService : ManualIntentService("DownloaderService") {
         notificationMgr.notify(ERROR_NOTIFICATION_TAG, errorID++, mBuilder.build())
     }
 
-    private fun downloadNotification(title: String, text: String) {
-        Log.i(TAG, "downloadNotification: $title, $text")
+    private fun statusNotification(title: String, text: String) {
+        Log.i(TAG, "statusNotification: $title, $text")
         val mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_stat_notify)
                 .setContentTitle(title)

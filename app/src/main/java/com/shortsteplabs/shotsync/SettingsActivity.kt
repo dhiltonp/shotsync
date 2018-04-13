@@ -19,6 +19,7 @@ package com.shortsteplabs.shotsync
 
 import android.Manifest
 import android.annotation.TargetApi
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -27,10 +28,14 @@ import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.preference.*
+import android.provider.Settings
+import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.text.TextUtils
 import android.view.MenuItem
+import android.view.View
 import com.shortsteplabs.shotsync.ConnectReceiver.Companion.requestDownload
 
 /**
@@ -49,23 +54,49 @@ class SettingsActivity : AppCompatPreferenceActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        requestFilePermissions()
-        requestDownload(this)
         setupActionBar()
+
+        requestFilePermissions() // only request on first run, then do it when an action needs a specific permission?
+        requestDownload(this)
     }
 
     fun requestFilePermissions() {
         // TODO: handle the callback
-        val permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        val neededPermissions = mutableListOf<String>()
 
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
+        val writePermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (writePermission != PackageManager.PERMISSION_GRANTED) {
+            neededPermissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+
+        // We don't have permission so prompt the user
+        if (neededPermissions.size > 0) {
             ActivityCompat.requestPermissions(
                     this,
-                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    neededPermissions.toTypedArray(),
                     WRITE_EXTERNAL
             )
+        }
+
+        if (Build.VERSION.SDK_INT >= 23) {
+            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                try {
+                    startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS))
+                } catch (e: ActivityNotFoundException) {
+
+                    class LaunchBatteryOptimizations : View.OnClickListener {
+                        override fun onClick(v: View) {
+                            startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                        }
+                    }
+                    val notification = Snackbar.make(this.findViewById(android.R.id.content),
+                            "Mark app as 'Don't Optimize' for reliable communication with camera",
+                            Snackbar.LENGTH_INDEFINITE)
+                    notification.setAction("Open", LaunchBatteryOptimizations())
+                    notification.show()
+                }
+            }
         }
     }
 
