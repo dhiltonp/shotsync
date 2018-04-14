@@ -12,31 +12,19 @@
         android:id="@+id/remote"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:text="Remote"
+        android:text="@string/remote"
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/manualImport"
+        app:layout_constraintBottom_toTopOf="@+id/selectiveImport"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/precisionGps"
+        android:id="@+id/selectiveImport"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:text="Precision GPS (2h)"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/deleteDownloaded"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/forceSync" />
-
-    <Button
-        android:id="@+id/manualImport"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:text="Manual Import"
+        android:text="@string/selective_import"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/forceSync"
         app:layout_constraintHorizontal_bias="0.5"
@@ -48,19 +36,31 @@
         android:id="@+id/forceSync"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:text="Force Sync"
+        android:text="@string/force_sync"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/precisionGps"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/manualImport" />
+        app:layout_constraintTop_toBottomOf="@+id/selectiveImport" />
+
+    <Button
+        android:id="@+id/precisionGps"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="@string/precision_gps_2h"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/deleteDownloaded"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/forceSync" />
 
     <Button
         android:id="@+id/deleteDownloaded"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:text="Delete Downloaded"
+        android:text="@string/delete_downloaded"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.5"

@@ -6,41 +6,42 @@
     <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
          dismiss it. -->
     <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
-    <PreferenceCategory android:title="SyncSettings">
+    <PreferenceCategory android:title="Sync Types">
 
         <ListPreference
-            android:defaultValue="1"
+            android:defaultValue="Sync then Off"
             android:entries="@array/default_mode_titles"
             android:entryValues="@array/default_mode_values"
             android:key="default_sync_mode"
-            android:title="Sync Mode" />
+            android:title="@string/sync_mode" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="sync_time"
-            android:title="Time" />
+            android:summary="@string/sync_time_warning"
+            android:title="@string/sync_time" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="sync_download"
-            android:title="Download" />
+            android:title="@string/sync_download" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="sync_gps"
-            android:title="GPS" />
+            android:title="@string/sync_gps" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Time">
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="maintain_utc"
-            android:summary="conflicts with OIShare"
-            android:title="Maintain UTC" />
+            android:summary="@string/maintain_utc_warning"
+            android:title="@string/maintain_utc" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Download">
         <ListPreference
-            android:defaultValue="1"
-            android:entries="@array/download_window_titles"
-            android:entryValues="@array/download_window_values"
-            android:key="list_preference_1"
-            android:title="Download Window" />
+            android:defaultValue="86400"
+            android:entries="@array/sync_range_titles"
+            android:entryValues="@array/sync_range_values"
+            android:key="sync_range"
+            android:title="Sync Range" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="download_jpg"
@@ -52,10 +53,7 @@
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="download_video"
-            android:summary="Can drain a lot of battery"
+            android:summary="@string/download_video_warning"
             android:title="Video" />
     </PreferenceCategory>
-
-
-
 </PreferenceScreen>

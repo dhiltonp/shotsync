@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="default_mode_titles">
-        <item>Sync then Off</item>
-        <item>Live Sync</item>
-        <item>Disabled?</item>
+        <item>@string/sync_then_off</item>
+        <item>@string/sync_while_shooting</item>
     </string-array>
     <string-array name="default_mode_values">
         <item>Sync then Off</item>
-        <item>Live Sync</item>
-        <item>No Sync</item>
+        <item>Sync while Shooting</item>
     </string-array>
-    <string-array name="download_window_titles">
-        <item>6 hours</item>
-        <item>1 day</item>
-        <item>1 week</item>
-        <item>1 month</item>
-        <item>1 year</item>
-        <item>All time</item>
+    <string-array name="sync_range_titles">
+        <item>@string/past_six_hours</item>
+        <item>@string/past_day</item>
+        <item>@string/past_week</item>
+        <item>@string/past_month</item>
+        <item>@string/past_year</item>
+        <item>@string/all_time</item>
     </string-array>
-    <string-array name="download_window_values">
+    <string-array name="sync_range_values">
+        <!--seconds in time window-->
         <item>21600</item>
         <item>86400</item>
         <item>604800</item>
@@ -26,21 +25,12 @@
         <item>31536000</item>
         <item>2147483647</item>
     </string-array>
-
-    <!--<string-array name="pref_sync_frequency_titles">-->
-        <!--<item>15 minutes</item>-->
-        <!--<item>30 minutes</item>-->
-        <!--<item>1 hour</item>-->
-        <!--<item>3 hours</item>-->
-        <!--<item>6 hours</item>-->
-        <!--<item>Never</item>-->
-    <!--</string-array>-->
-    <!--<string-array name="pref_sync_frequency_values">-->
-        <!--<item>15</item>-->
-        <!--<item>30</item>-->
-        <!--<item>60</item>-->
-        <!--<item>180</item>-->
-        <!--<item>360</item>-->
-        <!--<item>-1</item>-->
-<!--</string-array>-->
+    <string name="past_six_hours">Past 6 hours</string>
+    <string name="past_day">Past day</string>
+    <string name="past_week">Past week</string>
+    <string name="past_month">Past month</string>
+    <string name="past_year">Past year</string>
+    <string name="all_time">All time</string>
+    <string name="sync_while_shooting">Sync while Shooting</string>
+    <string name="sync_then_off">Sync then Off</string>
 </resources>
