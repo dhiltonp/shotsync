@@ -17,15 +17,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 package com.shortsteplabs.shotsync
 
+import android.Manifest
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Environment
 import android.os.StatFs
 import android.provider.MediaStore.Images.ImageColumns.*
 import android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 import android.provider.MediaStore.MediaColumns.DATA
 import android.provider.MediaStore.MediaColumns.DISPLAY_NAME
+import android.support.v4.app.ActivityCompat
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
 import android.util.Log
@@ -63,6 +66,10 @@ class DownloaderService : ManualIntentService("DownloaderService") {
         }
     }
 
+    fun hasWritePermission(context: Context): Boolean {
+        return ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+    }
+
     private fun downloadLoop(client: HttpHelper) {
         val camera = OlyInterface.getCamInfo(client)
         statusNotification("Starting Download", "Connected to $camera, discovering new files.")
@@ -84,30 +91,33 @@ class DownloaderService : ManualIntentService("DownloaderService") {
 
             toDownload += newResources.size
             for (resource in newResources) {
-                downloaded++
-                statusNotification("Downloading from $camera", "$downloaded/$toDownload new: ${resource.filename}")
 
-                if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
-                    clearableNotification("Error", "Storage permissions not granted")
-                } else if (resource.bytes > bytesAvailable()) {
-                    clearableNotification("Error", "${resource.filename} cannot fit on storage")
-                } else if (resource.bytes > 4294967295) { // 4GB, 2^32-1. TODO: detect actual limit
-                    clearableNotification("Error", "${resource.filename} exceeds 4GB limit")
-                } else {
-                    // download file to tmp
-                    var partial: File
-                    for (i in 0 until 3) {
-                        partial = getPublicFile(resource.filename + ".partial")
-                        OlyInterface.download(client, resource, partial)
-                        if (partial.length() != resource.bytes) {
-                            Log.e(TAG, "${resource.filename}: downloaded vs. expected bytes don't match")
-                        } else {
-                            val file = moveDownload(resource, partial)
-                            registerFile(resource, file)
-                            break
+                if (hasWritePermission(this)) {
+                    downloaded++
+                    statusNotification("Downloading from $camera", "$downloaded/$toDownload new: ${resource.filename}")
+
+                    if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
+                        clearableNotification("Error", "Storage permissions not granted")
+                    } else if (resource.bytes > bytesAvailable()) {
+                        clearableNotification("Error", "${resource.filename} cannot fit on storage")
+                    } else if (resource.bytes > 4294967295) { // 4GB, 2^32-1. TODO: detect actual limit
+                        clearableNotification("Error", "${resource.filename} exceeds 4GB limit")
+                    } else {
+                        // download file to tmp
+                        var partial: File
+                        for (i in 0 until 3) {
+                            partial = getPublicFile(resource.filename + ".partial")
+                            OlyInterface.download(client, resource, partial)
+                            if (partial.length() != resource.bytes) {
+                                Log.e(TAG, "${resource.filename}: downloaded vs. expected bytes don't match")
+                            } else {
+                                val file = moveDownload(resource, partial)
+                                registerFile(resource, file)
+                                break
+                            }
                         }
-                    }
 
+                    }
                 }
             }
             clearableNotification("Downloading from $camera", "$downloaded downloaded, shutting down.")

@@ -17,19 +17,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 package com.shortsteplabs.shotsync
 
-import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkInfo
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat.startActivity
 import android.util.Log
 
 
@@ -45,7 +41,7 @@ class ConnectReceiver : BroadcastReceiver() {
         }
     }
 
-    private class NoWifi : Exception()
+    class NoWifi : Exception()
 
     fun detectCamera(wifi: WifiInfo): Boolean {
         // with multiple manufacturers, return interface
@@ -57,10 +53,6 @@ class ConnectReceiver : BroadcastReceiver() {
             return true
         }
         return false
-    }
-
-    fun hasWritePermission(context: Context): Boolean {
-        return ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
     }
 
     fun bindNetwork(context: Context, network: Network) {
@@ -104,15 +96,8 @@ class ConnectReceiver : BroadcastReceiver() {
 
         bindNetwork(context, network)
 
-        if (hasWritePermission(context)) {
-            if (detectCamera(wifi)) {
-                DownloaderService.startDownload(context)
-            }
-        } else {
-           if (intent.action == "android.net.wifi.STATE_CHANGE") {
-               Log.d(TAG, "starting activity to request write permissions")
-               startActivity(context, Intent(context, SettingsActivity::class.java), null)
-           }
+        if (detectCamera(wifi)) {
+            DownloaderService.startDownload(context)
         }
     }
 }
