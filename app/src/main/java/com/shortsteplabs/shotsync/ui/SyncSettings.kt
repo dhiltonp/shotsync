@@ -1,10 +1,14 @@
 package com.shortsteplabs.shotsync.ui
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.preference.ListPreference
 import android.preference.PreferenceFragment
+import android.preference.PreferenceManager
 import android.support.v7.app.AppCompatActivity
 import com.shortsteplabs.shotsync.R
+
+
 
 /**
  * Created by david on 4/14/18.
@@ -12,18 +16,23 @@ import com.shortsteplabs.shotsync.R
 
 
 class SyncSettingsFragment: PreferenceFragment() {
+    private val listener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
+        when (key) {
+            getString(R.string.sync_mode_key) -> updateListSummary(key)
+            getString(R.string.sync_period_key) -> updateListSummary(key)
+         }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         addPreferencesFromResource(R.xml.sync_settings)
-//        registerOnSharedPreferenceChangeListener(this)
 
-        updateListSummary("default_sync_mode")
-        updateListSummary("sync_range")
+        val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+
+        updateListSummary(getString(R.string.sync_mode_key))
+        updateListSummary(getString(R.string.sync_period_key))
     }
-//
-//    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-//        TODO("not implemented")
-//    }
 
     private fun updateListSummary(key: String) {
         val pref = findPreference(key) as ListPreference

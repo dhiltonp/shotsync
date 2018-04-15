@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="default_mode_titles">
+    <string-array name="default_sync_mode_titles">
         <item>@string/sync_then_off</item>
         <item>@string/sync_while_shooting</item>
     </string-array>
-    <string-array name="default_mode_values">
+    <string-array name="default_sync_mode_values">
         <item>Sync then Off</item>
         <item>Sync while Shooting</item>
     </string-array>

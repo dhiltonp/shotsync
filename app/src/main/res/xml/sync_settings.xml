@@ -6,54 +6,60 @@
     <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
          dismiss it. -->
     <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
-    <PreferenceCategory android:title="Sync Types">
-
+    <PreferenceCategory
+        android:title="@string/category_sync_types">
         <ListPreference
             android:defaultValue="Sync then Off"
-            android:entries="@array/default_mode_titles"
-            android:entryValues="@array/default_mode_values"
-            android:key="default_sync_mode"
-            android:title="@string/sync_mode" />
+            android:entries="@array/default_sync_mode_titles"
+            android:entryValues="@array/default_sync_mode_values"
+            android:key="@string/sync_mode_key"
+            android:title="@string/sync_mode_title" />
         <CheckBoxPreference
             android:defaultValue="true"
-            android:key="sync_time"
+            android:key="@string/sync_download_key"
+            android:title="@string/sync_download_title" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/sync_gps_key"
+            android:title="@string/sync_gps_title" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/sync_time_key"
             android:summary="@string/sync_time_warning"
-            android:title="@string/sync_time" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="sync_download"
-            android:title="@string/sync_download" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="sync_gps"
-            android:title="@string/sync_gps" />
+            android:title="@string/sync_time_title" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="Time">
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="maintain_utc"
-            android:summary="@string/maintain_utc_warning"
-            android:title="@string/maintain_utc" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="Download">
+    <PreferenceCategory
+        android:key="@string/category_download_key"
+        android:title="@string/category_download_title"
+        android:dependency="@string/sync_download_key">
         <ListPreference
             android:defaultValue="86400"
             android:entries="@array/sync_period_titles"
             android:entryValues="@array/sync_period_values"
-            android:key="sync_period"
-            android:title="@string/sync_period" />
+            android:key="@string/sync_period_key"
+            android:title="@string/sync_period_title" />
         <CheckBoxPreference
             android:defaultValue="true"
-            android:key="download_jpg"
+            android:key="@string/download_jpg_key"
             android:title="JPG" />
         <CheckBoxPreference
             android:defaultValue="false"
-            android:key="download_raw"
+            android:key="@string/download_raw_key"
             android:title="RAW" />
         <CheckBoxPreference
             android:defaultValue="false"
-            android:key="download_video"
+            android:key="@string/download_video_key"
             android:summary="@string/download_video_warning"
             android:title="Video" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="@string/category_time_key"
+        android:title="@string/category_time_title"
+        android:dependency="@string/sync_time_key">
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="@string/maintain_utc_key"
+            android:summary="@string/maintain_utc_warning"
+            android:title="@string/maintain_utc_title" />
     </PreferenceCategory>
 </PreferenceScreen>

@@ -1,19 +1,35 @@
 <resources>
     <string name="app_name">ShotSync</string>
     <string name="title_activity_main">ShotSync</string>
-    <string name="action_settings">Settings</string>
-    <string name="sync_mode">Sync Mode</string>
-    <string name="sync_time">Time</string>
-    <string name="sync_download">Download</string>
-    <string name="sync_gps">GPS</string>
-    <string name="maintain_utc">Maintain UTC</string>
-    <string name="maintain_utc_warning">conflicts with native app</string>
-    <string name="download_video_warning">Can drain a lot of battery</string>
-    <string name="sync_time_warning">Required for reliable GPS</string>
+    <string name="title_activity_settings">Settings</string>
+
     <string name="remote">Remote</string>
-    <string name="precision_gps_2h">Precision GPS (2h)</string>
     <string name="selective_import">Selective Import</string>
     <string name="force_sync">Force Sync</string>
+    <string name="precision_gps_2h">Precision GPS (2h)</string>
     <string name="delete_downloaded">Delete Downloaded</string>
-    <string name="sync_period">Sync Period</string>
+
+    <string name="category_sync_types">Sync Types</string>
+    <string name="sync_mode_key">default_sync_mode_key</string>
+    <string name="sync_mode_title">Sync Mode</string>
+    <string name="sync_download_key">sync_download</string>
+    <string name="sync_download_title">Download</string>
+    <string name="sync_gps_key">sync_gps</string>
+    <string name="sync_gps_title">GPS</string>
+    <string name="sync_time_key">sync_time</string>
+    <string name="sync_time_title">Time</string>
+    <string name="sync_time_warning">Required for reliable Geotagging</string>
+    <string name="category_time_key">category_time</string>
+    <string name="category_time_title">Time</string>
+    <string name="maintain_utc_key">maintain_utc</string>
+    <string name="maintain_utc_title">Maintain UTC</string>
+    <string name="maintain_utc_warning">Conflicts with official app</string>
+    <string name="category_download_key">category_download</string>
+    <string name="category_download_title">Download</string>
+    <string name="sync_period_key">sync_period</string>
+    <string name="sync_period_title">Sync Period</string>
+    <string name="download_jpg_key">download_jpg</string>
+    <string name="download_raw_key">download_raw</string>
+    <string name="download_video_key">download_video</string>
+    <string name="download_video_warning">Can drain a lot of battery</string>
 </resources>
