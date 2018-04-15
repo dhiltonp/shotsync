@@ -22,6 +22,9 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.Network
+import android.os.Build
 import android.os.Environment
 import android.os.StatFs
 import android.provider.MediaStore.Images.ImageColumns.*
@@ -60,7 +63,7 @@ class DownloaderService : ManualIntentService("DownloaderService") {
     override fun onHandleIntent(intent: Intent?) {
         if (intent != null) {
             val action = intent.action
-            if (ACTION_START_DOWNLOAD == action) {
+            if (ACTION_START_SYNC == action) {
                 handleStartDownload()
             }
         }
@@ -83,6 +86,7 @@ class DownloaderService : ManualIntentService("DownloaderService") {
             val newResources = mutableListOf<OlyEntry>()
             val now = Date()
             for (resource in OlyInterface.listResources(client)) {
+
                 if (resource.year == 1900 + now.year && resource.month == now.month + 1 && resource.day == now.date &&
                         resource.extension == "ORF") {
                     newResources.add(resource)
@@ -227,13 +231,64 @@ class DownloaderService : ManualIntentService("DownloaderService") {
         private val ERROR_NOTIFICATION_TAG = TAG+"error notification"
         private var errorID = 1_234_789
 
-        private val ACTION_START_DOWNLOAD = "com.shortsteplabs.shotsync.action.START_DOWNLOAD"
+        private val ACTION_START_SYNC = "com.shortsteplabs.shotsync.action.START_SYNC"
         private val WIFI = "wifi"
 
-        fun startDownload(context: Context) {
-            val intent = Intent(context, DownloaderService::class.java)
-            intent.action = ACTION_START_DOWNLOAD
-            context.startService(intent)
+
+        class NoWifi : Exception()
+
+        private data class ConnectionInfo(val ssid: String, val network: Network)
+        private fun getWifiConnection(context: Context): ConnectionInfo {
+            val connMgr = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            for (network in connMgr.allNetworks) {
+                val netInfo = connMgr.getNetworkInfo(network)
+                if (netInfo.type == ConnectivityManager.TYPE_WIFI && netInfo.isConnected) {
+                    Log.d(TAG, "WIFI connected")
+                    val ssid = netInfo.extraInfo.toString()
+                    return ConnectionInfo(ssid.trim('"'), network)
+                }
+            }
+            throw NoWifi()
+        }
+
+        fun bindNetwork(context: Context, network: Network) {
+            if (Build.VERSION.SDK_INT >= 23) {
+                val mgr = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                mgr.bindProcessToNetwork(network)
+            } else {
+                ConnectivityManager.setProcessDefaultNetwork(network)
+            }
+        }
+
+
+        fun detectCamera(ssid: String): Boolean {
+            // with multiple manufacturers, return interface
+            Log.d(TAG, "connecting to $ssid")
+
+
+            // todo: explicitly register SSIDs
+            if (ssid.startsWith("E-M5")) {
+                Log.d(TAG, "detected olympus camera")
+                return true
+            }
+            return false
+        }
+
+        fun startSync(context: Context) {
+            val (ssid, network) = try {
+                getWifiConnection(context)
+            } catch (e: NoWifi) {
+                return
+            }
+
+            bindNetwork(context, network)
+
+            if (detectCamera(ssid)) {
+
+                val intent = Intent(context, DownloaderService::class.java)
+                intent.action = ACTION_START_SYNC
+                context.startService(intent)
+            }
         }
     }
 }

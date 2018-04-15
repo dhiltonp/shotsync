@@ -8,7 +8,7 @@
         <item>Sync then Off</item>
         <item>Sync while Shooting</item>
     </string-array>
-    <string-array name="sync_range_titles">
+    <string-array name="sync_period_titles">
         <item>@string/past_six_hours</item>
         <item>@string/past_day</item>
         <item>@string/past_week</item>
@@ -16,7 +16,7 @@
         <item>@string/past_year</item>
         <item>@string/all_time</item>
     </string-array>
-    <string-array name="sync_range_values">
+    <string-array name="sync_period_values">
         <!--seconds in time window-->
         <item>21600</item>
         <item>86400</item>

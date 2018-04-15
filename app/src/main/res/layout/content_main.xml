@@ -36,6 +36,7 @@
         android:id="@+id/forceSync"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:onClick="forceSync"
         android:text="@string/force_sync"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/precisionGps"

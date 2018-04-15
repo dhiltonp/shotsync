@@ -12,7 +12,7 @@ import android.provider.Settings
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.view.View
-import com.shortsteplabs.shotsync.ConnectReceiver
+import com.shortsteplabs.shotsync.DownloaderService.Companion.startSync
 
 /**
  * Created by david on 4/13/18.
@@ -44,7 +44,7 @@ class Permissions(private val activity: Activity): ActivityCompat.OnRequestPermi
         when (requestCode) {
             WRITE_EXTERNAL -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    ConnectReceiver.requestDownload(activity)
+                    startSync(activity)
                 }
             }
             else -> {

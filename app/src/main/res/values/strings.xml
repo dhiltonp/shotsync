@@ -15,4 +15,5 @@
     <string name="selective_import">Selective Import</string>
     <string name="force_sync">Force Sync</string>
     <string name="delete_downloaded">Delete Downloaded</string>
+    <string name="sync_period">Sync Period</string>
 </resources>

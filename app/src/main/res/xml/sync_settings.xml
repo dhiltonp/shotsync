@@ -38,10 +38,10 @@
     <PreferenceCategory android:title="Download">
         <ListPreference
             android:defaultValue="86400"
-            android:entries="@array/sync_range_titles"
-            android:entryValues="@array/sync_range_values"
-            android:key="sync_range"
-            android:title="Sync Range" />
+            android:entries="@array/sync_period_titles"
+            android:entryValues="@array/sync_period_values"
+            android:key="sync_period"
+            android:title="@string/sync_period" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="download_jpg"

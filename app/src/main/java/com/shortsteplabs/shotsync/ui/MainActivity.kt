@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import com.shortsteplabs.shotsync.DownloaderService.Companion.startSync
 import com.shortsteplabs.shotsync.R
 
 class MainActivity : AppCompatActivity() {
@@ -27,5 +29,9 @@ class MainActivity : AppCompatActivity() {
             true
         }
         else ->super.onOptionsItemSelected(item)
+    }
+
+    fun forceSync(view: View) {
+        startSync(this)
     }
 }
