@@ -9,53 +9,29 @@
     tools:showIn="@layout/activity_main">
 
     <Button
-        android:id="@+id/remote"
+        android:id="@+id/addCamera"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:text="@string/remote"
+        android:text="@string/add_camera"
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/selectiveImport"
+        app:layout_constraintBottom_toTopOf="@+id/startSync"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/selectiveImport"
+        android:id="@+id/startSync"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:text="@string/selective_import"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/forceSync"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/remote" />
-
-    <Button
-        android:id="@+id/forceSync"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:onClick="forceSync"
-        android:text="@string/force_sync"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/precisionGps"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/selectiveImport" />
-
-    <Button
-        android:id="@+id/precisionGps"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:text="@string/precision_gps_2h"
+        android:onClick="startSync"
+        android:text="@string/start_sync"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/deleteDownloaded"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/forceSync" />
+        app:layout_constraintTop_toBottomOf="@+id/addCamera" />
 
     <Button
         android:id="@+id/deleteDownloaded"
@@ -67,5 +43,5 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/precisionGps" />
+        app:layout_constraintTop_toBottomOf="@+id/startSync" />
 </android.support.constraint.ConstraintLayout>

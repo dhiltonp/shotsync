@@ -20,7 +20,7 @@ class SyncSettingsFragment: PreferenceFragment() {
         when (key) {
             getString(R.string.sync_mode_key) -> updateListSummary(key)
             getString(R.string.sync_period_key) -> updateListSummary(key)
-            getString(R.string.sync_download_key) -> Permissions(activity).requestFilePermissions()
+            getString(R.string.sync_files_key) -> Permissions(activity).requestFilePermissions()
          }
     }
 

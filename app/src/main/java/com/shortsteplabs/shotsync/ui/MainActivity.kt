@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         else ->super.onOptionsItemSelected(item)
     }
 
-    fun forceSync(view: View) {
+    fun startSync(view: View) {
         startSync(this)
     }
 }

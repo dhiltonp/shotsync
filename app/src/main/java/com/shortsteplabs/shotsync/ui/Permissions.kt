@@ -83,7 +83,7 @@ class Permissions(private val activity: Activity): FragmentActivity() {
         if (writePermission != PackageManager.PERMISSION_GRANTED) {
             val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
             with (prefs.edit()) {
-                putBoolean(activity.getString(R.string.sync_download_key), false)
+                putBoolean(activity.getString(R.string.sync_files_key), false)
                 commit()
             }
         }
