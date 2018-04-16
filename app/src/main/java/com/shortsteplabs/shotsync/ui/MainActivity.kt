@@ -10,12 +10,17 @@ import com.shortsteplabs.shotsync.DownloaderService.Companion.startSync
 import com.shortsteplabs.shotsync.R
 
 class MainActivity : AppCompatActivity() {
+    val perms = Permissions(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-//        setSupportActionBar(toolbar)
         setSupportActionBar(findViewById(R.id.toolbar))
+    }
+
+    override fun onStart() {
+        super.onStart()
+        perms.firstRun()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

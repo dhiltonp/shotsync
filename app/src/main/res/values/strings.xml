@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">ShotSync</string>
+    <string name="version_code">version_code</string>
     <string name="title_activity_main">ShotSync</string>
     <string name="title_activity_settings">Settings</string>
 

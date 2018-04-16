@@ -4,6 +4,11 @@ Currently using an Olympus E-M5 Mk II for development.
 
 
 TODO:
+make permissions work
+ - firstboot
+ - 
+ 
+register/unregister SSIDs
 downloadLoop - save seen files, etc.
 make downloadLoop loop asynchronous
 downloadLoop files - downloadLoop manager?

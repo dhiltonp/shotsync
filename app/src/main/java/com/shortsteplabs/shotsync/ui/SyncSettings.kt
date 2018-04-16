@@ -20,18 +20,33 @@ class SyncSettingsFragment: PreferenceFragment() {
         when (key) {
             getString(R.string.sync_mode_key) -> updateListSummary(key)
             getString(R.string.sync_period_key) -> updateListSummary(key)
+            getString(R.string.sync_download_key) -> Permissions(activity).requestFilePermissions()
          }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Permissions(activity).updateSyncDownloadSetting()
         addPreferencesFromResource(R.xml.sync_settings)
+    }
 
+    override fun onStart() {
+        super.onStart()
         val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
         prefs.registerOnSharedPreferenceChangeListener(listener)
 
         updateListSummary(getString(R.string.sync_mode_key))
         updateListSummary(getString(R.string.sync_period_key))
+
+        // TODO: disable Download check box if we don't have file permissions
+        //  related: require download check box and file permissions to actually download
+
+    }
+
+    override fun onStop() {
+        super.onStop()
+        val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
+        prefs.unregisterOnSharedPreferenceChangeListener(listener)
     }
 
     private fun updateListSummary(key: String) {
