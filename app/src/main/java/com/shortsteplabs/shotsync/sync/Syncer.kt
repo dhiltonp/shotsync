@@ -11,8 +11,8 @@ import android.support.v4.app.ActivityCompat
 import android.util.Log
 import android.webkit.MimeTypeMap
 import com.shortsteplabs.shotsync.HttpHelper
-import com.shortsteplabs.shotsync.OlyEntry
-import com.shortsteplabs.shotsync.OlyInterface
+import com.shortsteplabs.shotsync.camera.OlyEntry
+import com.shortsteplabs.shotsync.camera.OlyInterface
 import com.shortsteplabs.shotsync.ui.SyncNotification
 import java.io.File
 import java.util.*

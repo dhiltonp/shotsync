@@ -1,5 +1,6 @@
 package com.shortsteplabs.shotsync
 
+import com.shortsteplabs.shotsync.camera.OlyEntry
 import org.junit.Assert.*
 import org.junit.Test
 

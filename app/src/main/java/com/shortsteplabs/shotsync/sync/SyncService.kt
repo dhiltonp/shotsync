@@ -19,10 +19,10 @@ package com.shortsteplabs.shotsync.sync
 
 import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
-import android.net.Network
-import android.os.Build
-import android.util.Log
+import com.shortsteplabs.shotsync.db.DB
+import com.shortsteplabs.shotsync.util.NoWifi
+import com.shortsteplabs.shotsync.util.bindNetwork
+import com.shortsteplabs.shotsync.util.getWifiConnection
 
 
 /**
@@ -43,10 +43,7 @@ class SyncService : ManualIntentService("SyncService") {
         if (intent != null) {
             val action = intent.action
             if (ACTION_START_SYNC == action) {
-                if (syncer == null) {
-                    syncer = Syncer(this)
-                    syncer!!.startDownload()
-                }
+                handleStartSync()
             } else if (ACTION_STOP_SYNC == action) {
 
             } else if (ACTION_CANCEL_SYNC == action) {
@@ -55,66 +52,35 @@ class SyncService : ManualIntentService("SyncService") {
         }
     }
 
+    fun handleStartSync() {
+        val (ssid, network) = try {
+            getWifiConnection(this)
+        } catch (e: NoWifi) {
+            return
+        }
+
+        if (syncer == null) {
+            syncer = Syncer(this)
+        }
+
+        val camera = DB.getInstance(this).cameraDao().findBySSID(ssid)
+        if (camera != null) {
+            bindNetwork(this, network)
+            syncer!!.startDownload()
+        }
+    }
+
     companion object {
         private val TAG = "SyncService"
         private val ACTION_START_SYNC = "com.shortsteplabs.shotsync.action.START_SYNC"
         private val ACTION_STOP_SYNC = "com.shortsteplabs.shotsync.action.STOP_SYNC"
         private val ACTION_CANCEL_SYNC = "com.shortsteplabs.shotsync.action.CANCEL_SYNC"
-
-
-        class NoWifi : Exception()
-
-        private data class ConnectionInfo(val ssid: String, val network: Network)
-        private fun getWifiConnection(context: Context): ConnectionInfo {
-            val connMgr = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            for (network in connMgr.allNetworks) {
-                val netInfo = connMgr.getNetworkInfo(network)
-                if (netInfo.type == ConnectivityManager.TYPE_WIFI && netInfo.isConnected) {
-                    Log.d(TAG, "WIFI connected")
-                    val ssid = netInfo.extraInfo.toString()
-                    return ConnectionInfo(ssid.trim('"'), network)
-                }
-            }
-            throw NoWifi()
-        }
-
-        fun bindNetwork(context: Context, network: Network) {
-            if (Build.VERSION.SDK_INT >= 23) {
-                val mgr = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-                mgr.bindProcessToNetwork(network)
-            } else {
-                ConnectivityManager.setProcessDefaultNetwork(network)
-            }
-        }
-
-
-        fun detectCamera(ssid: String): Boolean {
-            // with multiple manufacturers, return interface
-            Log.d(TAG, "connecting to $ssid")
-
-
-            // todo: explicitly register SSIDs
-            if (ssid.startsWith("E-M5")) {
-                Log.d(TAG, "detected olympus camera")
-                return true
-            }
-            return false
-        }
+        private val ACTION_DISCOVER_CAMERA = "com.shortsteplabs.shotsync.action.ACTION_DISCOVER_CAMERA"
 
         fun startSync(context: Context) {
-            val (ssid, network) = try {
-                getWifiConnection(context)
-            } catch (e: NoWifi) {
-                return
-            }
-
-            bindNetwork(context, network)
-
-            if (detectCamera(ssid)) {
-                val intent = Intent(context, SyncService::class.java)
-                intent.action = ACTION_START_SYNC
-                context.startService(intent)
-            }
+            val intent = Intent(context, SyncService::class.java)
+            intent.action = ACTION_START_SYNC
+            context.startService(intent)
         }
 
         fun stopSync(context: Context) {
@@ -126,6 +92,12 @@ class SyncService : ManualIntentService("SyncService") {
         fun cancelSync(context: Context) {
             val intent = Intent(context, SyncService::class.java)
             intent.action = ACTION_CANCEL_SYNC
+            context.startService(intent)
+        }
+
+        fun discover(context: Context) {
+            val intent = Intent(context, SyncService::class.java)
+            intent.action = ACTION_DISCOVER_CAMERA
             context.startService(intent)
         }
     }

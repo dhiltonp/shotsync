@@ -28,8 +28,8 @@ class Camera {
     var model = ""
     var apiVersion = ""
     var filesDownloaded = 0
-    var timeAdded = -1L
-    var timeLastConnected = -1L
+    var timeAdded = 0L
+    var timeLastSynced = 0L
 }
 
 @Dao
@@ -40,8 +40,8 @@ interface CameraDao {
     @Query("SELECT * FROM camera WHERE id IN (:cameraIds)")
     fun loadAllByIds(cameraIds: IntArray): List<Camera>
 
-    @Query("SELECT * FROM camera WHERE ssid==:ssid")
-    fun findBySSID(ssid: String): Camera
+    @Query("SELECT * FROM camera WHERE ssid = :ssid")
+    fun findBySSID(ssid: String): Camera?
 
     @Insert
     fun insertAll(vararg cameras: Camera)

@@ -1,15 +1,18 @@
 package com.shortsteplabs.shotsync.ui
 
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import com.shortsteplabs.shotsync.sync.SyncService.Companion.startSync
 import com.shortsteplabs.shotsync.R
+import com.shortsteplabs.shotsync.camera.Discover
+import com.shortsteplabs.shotsync.sync.SyncService.Companion.startSync
 
 /**
  * Copyright (C) 2018  David Hilton <david.hilton.p@gmail.com>
@@ -63,7 +66,12 @@ class MainActivity : AppCompatActivity() {
         val builder = AlertDialog.Builder(this)
         builder.setMessage("Please connect to your camera, then continue.")
         builder.setPositiveButton("Continue", fun(dialog: DialogInterface?, id: Int) {
-                // detect camera on current wifi, add camera to DB, enable buttons/change text?
+            class discover: AsyncTask<Context, Void, String>() {
+                override fun doInBackground(vararg params: Context?): String {
+                    return Discover().discover(params[0]!!)
+                }
+            }
+            discover().execute(this)
         })
         builder.setNegativeButton("Cancel", fun(_: DialogInterface?, _: Int) {})
         builder.create().show()

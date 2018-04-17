@@ -15,11 +15,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.shortsteplabs.shotsync
+package com.shortsteplabs.shotsync.camera
 
 import android.os.SystemClock.sleep
 import android.util.Log
 import android.util.Xml
+import com.shortsteplabs.shotsync.HttpHelper
 import org.xmlpull.v1.XmlPullParser
 import java.io.File
 import java.io.StringReader
@@ -132,7 +133,7 @@ object OlyInterface {
      */
     fun listResources(client: HttpHelper): List<OlyEntry> {
         Log.d(TAG, "listResources")
-        val dirs = OlyInterface.listDir(client, "/DCIM")
+        val dirs = listDir(client, "/DCIM")
 
         val resources = mutableListOf<OlyEntry>()
 
@@ -188,6 +189,25 @@ object OlyInterface {
                 if (parser.name == "model") {
                     if (parser.next() == XmlPullParser.TEXT) {
                         return parser.text
+                    }
+                }
+            } else {
+                break
+            }
+        }
+        return ""
+    }
+
+    fun getVersion(client: HttpHelper): String {
+        val parser = Xml.newPullParser()
+        parser.setInput(StringReader(client.get("http://192.168.0.10/get_commandlist.cgi")))
+
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.name == "oishare") {
+                parser.nextTag()
+                if (parser.name == "version") {
+                    if (parser.next() == XmlPullParser.TEXT) {
+                        return parser.text.trim()
                     }
                 }
             } else {
