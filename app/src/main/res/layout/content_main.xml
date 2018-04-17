@@ -12,6 +12,7 @@
         android:id="@+id/addCamera"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:onClick="addCamera"
         android:text="@string/add_camera"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/startSync"
@@ -44,4 +45,5 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/startSync" />
+    <!--android:enabled="false"-->
 </android.support.constraint.ConstraintLayout>
