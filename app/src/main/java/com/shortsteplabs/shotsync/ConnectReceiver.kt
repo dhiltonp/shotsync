@@ -23,6 +23,7 @@ import android.content.Intent
 import android.net.NetworkInfo
 import android.net.wifi.WifiManager
 import android.util.Log
+import com.shortsteplabs.shotsync.sync.DownloaderService
 
 
 class ConnectReceiver : BroadcastReceiver() {

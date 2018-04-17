@@ -15,11 +15,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.shortsteplabs.shotsync
+package com.shortsteplabs.shotsync.sync
 
 import android.Manifest
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -34,11 +32,12 @@ import android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 import android.provider.MediaStore.MediaColumns.DATA
 import android.provider.MediaStore.MediaColumns.DISPLAY_NAME
 import android.support.v4.app.ActivityCompat
-import android.support.v4.app.NotificationCompat
-import android.support.v4.app.NotificationManagerCompat
 import android.util.Log
 import android.webkit.MimeTypeMap
-import com.shortsteplabs.shotsync.sync.ManualIntentService
+import com.shortsteplabs.shotsync.HttpHelper
+import com.shortsteplabs.shotsync.OlyEntry
+import com.shortsteplabs.shotsync.OlyInterface
+import com.shortsteplabs.shotsync.ui.SyncNotification
 import java.io.File
 import java.util.*
 
@@ -53,14 +52,9 @@ import java.util.*
  */
 class DownloaderService : ManualIntentService("DownloaderService") {
     // TODO:
-    // change to regular service, IntentService doesn't wait for volley to finish
-    // refactor so that DownloaderService drives pipeline+updates notifications+saves,
-    //  OlyInterface is just for camera-specific stuff.
-    // create notification helper class
-    // intent:
-    //  downloadLoop files (need to actually store them, maybe check for free space, too?)
-    //  put notification of DL status in foreground
+    // refactor so that DownloaderService manages drives pipeline+updates notifications+saves,
 
+    val notification = SyncNotification(this)
     var downloading = false
 
     override fun onHandleIntent(intent: Intent?) {
@@ -78,7 +72,7 @@ class DownloaderService : ManualIntentService("DownloaderService") {
 
     private fun downloadLoop(client: HttpHelper) {
         val camera = OlyInterface.getCamInfo(client)
-        statusNotification("Starting Download", "Connected to $camera, discovering new files.")
+        notification.status("Starting Download", "Connected to $camera, discovering new files.")
 
         var toDownload = 0
         var downloaded = 0
@@ -101,14 +95,14 @@ class DownloaderService : ManualIntentService("DownloaderService") {
 
                 if (hasWritePermission(this)) {
                     downloaded++
-                    statusNotification("Downloading from $camera", "$downloaded/$toDownload new: ${resource.filename}")
+                    notification.status("Downloading from $camera", "$downloaded/$toDownload new: ${resource.filename}")
 
                     if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
-                        clearableNotification("Error", "Storage permissions not granted")
+                        notification.clearable("Error", "Storage permissions not granted")
                     } else if (resource.bytes > bytesAvailable()) {
-                        clearableNotification("Error", "${resource.filename} cannot fit on storage")
+                        notification.clearable("Error", "${resource.filename} cannot fit on storage")
                     } else if (resource.bytes > 4294967295) { // 4GB, 2^32-1. TODO: detect actual limit
-                        clearableNotification("Error", "${resource.filename} exceeds 4GB limit")
+                        notification.clearable("Error", "${resource.filename} exceeds 4GB limit")
                     } else {
                         // download file to tmp
                         var partial: File
@@ -127,12 +121,12 @@ class DownloaderService : ManualIntentService("DownloaderService") {
                     }
                 }
             }
-            clearableNotification("Downloading from $camera", "$downloaded downloaded, shutting down.")
+            notification.clearable("Downloading from $camera", "$downloaded downloaded, shutting down.")
 
             OlyInterface.shutdown(client)
             stopSelf()
         } catch (e: HttpHelper.NoConnection) {
-            clearableNotification("Download from $camera interrupted", "$downloaded/$toDownload downloaded")
+            notification.clearable("Download from $camera interrupted", "$downloaded/$toDownload downloaded")
         } finally {
             stopSelf()
         }
@@ -165,7 +159,7 @@ class DownloaderService : ManualIntentService("DownloaderService") {
             Log.d(TAG, "Starting downloadLoop")
             downloading = true
 
-            statusNotification("Starting Download", "Connecting to camera.")
+            notification.status("Starting Download", "Connecting to camera.")
 
             val client = HttpHelper()
 
@@ -174,7 +168,7 @@ class DownloaderService : ManualIntentService("DownloaderService") {
                 OlyInterface.connect(client)
                 downloadLoop(client)
             } catch (e: HttpHelper.NoConnection) {
-                clearableNotification("Download stopped", "Unable to connect")
+                notification.clearable("Download stopped", "Unable to connect")
                 stopSelf()
                 return
             }
@@ -197,43 +191,13 @@ class DownloaderService : ManualIntentService("DownloaderService") {
         return File(Environment.getExternalStoragePublicDirectory(dir), "ShotSync/$filename")
     }
 
-    private fun clearableNotification(title: String, text: String) {
-        Log.i(TAG, "clearableNotification: $title, $text")
-        val mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_stat_notify)
-                .setContentTitle(title)
-                .setContentText(text)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setOnlyAlertOnce(true)
-        val notificationMgr = NotificationManagerCompat.from(this)
-        notificationMgr.notify(ERROR_NOTIFICATION_TAG, errorID++, mBuilder.build())
-    }
-
-    private fun statusNotification(title: String, text: String) {
-        Log.i(TAG, "statusNotification: $title, $text")
-        val mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_stat_notify)
-                .setContentTitle(title)
-                .setContentText(text)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setOnlyAlertOnce(true)
-        startForeground(DOWNLOAD_NOTIFICATION_ID, mBuilder.build())
-    }
-
     override fun onDestroy() {
-        Log.d(TAG, "clearing notification")
-        val notificationManager = NotificationManagerCompat.from(this)
-        notificationManager.cancel(DOWNLOAD_NOTIFICATION_ID)
+        notification.clearStatus()
         super.onDestroy()
     }
 
     companion object {
         private val TAG = "DownloaderService"
-        private val CHANNEL_ID = TAG
-        private val DOWNLOAD_NOTIFICATION_ID = 21
-        private val ERROR_NOTIFICATION_TAG = TAG+"error notification"
-        private var errorID = 1_234_789
-
         private val ACTION_START_SYNC = "com.shortsteplabs.shotsync.action.START_SYNC"
         private val WIFI = "wifi"
 
@@ -277,16 +241,6 @@ class DownloaderService : ManualIntentService("DownloaderService") {
             return false
         }
 
-        fun createNotificationChannel(context: Context) {
-            if (Build.VERSION.SDK_INT >= 26) {
-                val notificationService = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                if (notificationService.getNotificationChannel(CHANNEL_ID) == null) {
-                    val channel = NotificationChannel(CHANNEL_ID, "ShotSync Service", NotificationManager.IMPORTANCE_NONE)
-                    notificationService.createNotificationChannel(channel)
-                }
-            }
-        }
-
         fun startSync(context: Context) {
             val (ssid, network) = try {
                 getWifiConnection(context)
@@ -297,8 +251,6 @@ class DownloaderService : ManualIntentService("DownloaderService") {
             bindNetwork(context, network)
 
             if (detectCamera(ssid)) {
-                createNotificationChannel(context)
-
                 val intent = Intent(context, DownloaderService::class.java)
                 intent.action = ACTION_START_SYNC
                 context.startService(intent)

@@ -51,7 +51,7 @@ class HttpHelper {
 
         val inputStream = response.body()!!.byteStream()
         val outputStream = file.outputStream()
-        val buf = ByteArray(1024*64)
+        val buf = ByteArray(1024*256)
         while (true) {
             // todo: test for cancellation
             try {

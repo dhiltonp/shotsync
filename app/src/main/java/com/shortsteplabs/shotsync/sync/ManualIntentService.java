@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.shortsteplabs.shotsync;
+package com.shortsteplabs.shotsync.sync;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Handler;

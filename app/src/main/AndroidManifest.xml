@@ -42,7 +42,7 @@
         </receiver>
 
         <service
-            android:name=".DownloaderService"
+            android:name=".sync.DownloaderService"
             android:exported="false" />
 
     </application>
