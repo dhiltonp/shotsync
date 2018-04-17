@@ -18,6 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 package com.shortsteplabs.shotsync
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -36,6 +38,7 @@ import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
 import android.util.Log
 import android.webkit.MimeTypeMap
+import com.shortsteplabs.shotsync.sync.ManualIntentService
 import java.io.File
 import java.util.*
 
@@ -274,6 +277,16 @@ class DownloaderService : ManualIntentService("DownloaderService") {
             return false
         }
 
+        fun createNotificationChannel(context: Context) {
+            if (Build.VERSION.SDK_INT >= 26) {
+                val notificationService = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                if (notificationService.getNotificationChannel(CHANNEL_ID) == null) {
+                    val channel = NotificationChannel(CHANNEL_ID, "ShotSync Service", NotificationManager.IMPORTANCE_NONE)
+                    notificationService.createNotificationChannel(channel)
+                }
+            }
+        }
+
         fun startSync(context: Context) {
             val (ssid, network) = try {
                 getWifiConnection(context)
@@ -284,6 +297,7 @@ class DownloaderService : ManualIntentService("DownloaderService") {
             bindNetwork(context, network)
 
             if (detectCamera(ssid)) {
+                createNotificationChannel(context)
 
                 val intent = Intent(context, DownloaderService::class.java)
                 intent.action = ACTION_START_SYNC
