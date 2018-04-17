@@ -33,9 +33,9 @@ import android.util.Log
  * TODO: Customize class - update intent actions, extra parameters and static
  * helper methods.
  */
-class DownloaderService : ManualIntentService("DownloaderService") {
+class SyncService : ManualIntentService("SyncService") {
     // TODO:
-    // refactor so that DownloaderService manages drives pipeline+updates notifications+saves,
+    // refactor so that SyncService manages drives pipeline+updates notifications+saves,
 
     var syncer: Syncer? = null
 
@@ -56,7 +56,7 @@ class DownloaderService : ManualIntentService("DownloaderService") {
     }
 
     companion object {
-        private val TAG = "DownloaderService"
+        private val TAG = "SyncService"
         private val ACTION_START_SYNC = "com.shortsteplabs.shotsync.action.START_SYNC"
         private val ACTION_STOP_SYNC = "com.shortsteplabs.shotsync.action.STOP_SYNC"
         private val ACTION_CANCEL_SYNC = "com.shortsteplabs.shotsync.action.CANCEL_SYNC"
@@ -111,20 +111,20 @@ class DownloaderService : ManualIntentService("DownloaderService") {
             bindNetwork(context, network)
 
             if (detectCamera(ssid)) {
-                val intent = Intent(context, DownloaderService::class.java)
+                val intent = Intent(context, SyncService::class.java)
                 intent.action = ACTION_START_SYNC
                 context.startService(intent)
             }
         }
 
         fun stopSync(context: Context) {
-            val intent = Intent(context, DownloaderService::class.java)
+            val intent = Intent(context, SyncService::class.java)
             intent.action = ACTION_STOP_SYNC
             context.startService(intent)
         }
 
         fun cancelSync(context: Context) {
-            val intent = Intent(context, DownloaderService::class.java)
+            val intent = Intent(context, SyncService::class.java)
             intent.action = ACTION_CANCEL_SYNC
             context.startService(intent)
         }

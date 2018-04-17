@@ -8,7 +8,7 @@ import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import com.shortsteplabs.shotsync.sync.DownloaderService.Companion.startSync
+import com.shortsteplabs.shotsync.sync.SyncService.Companion.startSync
 import com.shortsteplabs.shotsync.R
 
 /**

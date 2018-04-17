@@ -23,7 +23,7 @@ import android.content.Intent
 import android.net.NetworkInfo
 import android.net.wifi.WifiManager
 import android.util.Log
-import com.shortsteplabs.shotsync.sync.DownloaderService
+import com.shortsteplabs.shotsync.sync.SyncService
 
 
 class ConnectReceiver : BroadcastReceiver() {
@@ -43,6 +43,6 @@ class ConnectReceiver : BroadcastReceiver() {
         if (!isValidAction(intent)) return
         Log.d(TAG, intent.action)
 
-        DownloaderService.startSync(context)
+        SyncService.startSync(context)
     }
 }

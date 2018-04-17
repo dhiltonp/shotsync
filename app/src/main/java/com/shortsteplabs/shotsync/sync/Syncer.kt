@@ -35,9 +35,9 @@ import java.util.*
  */
 
 
-class Syncer(val downloaderService: DownloaderService) {
+class Syncer(val syncService: SyncService) {
     val TAG = "Syncer"
-    val notification = SyncNotification(downloaderService)
+    val notification = SyncNotification(syncService)
 
     var downloading = false
 
@@ -91,7 +91,7 @@ class Syncer(val downloaderService: DownloaderService) {
             toDownload += newResources.size
             for (resource in newResources) {
 
-                if (hasWritePermission(downloaderService)) {
+                if (hasWritePermission(syncService)) {
                     downloaded++
                     notification.status("Downloading from $camera", "$downloaded/$toDownload new: ${resource.filename}")
 
@@ -142,7 +142,7 @@ class Syncer(val downloaderService: DownloaderService) {
         values.put(MediaStore.Images.ImageColumns.SIZE, file.length())
         // TODO: add LATITUDE, LONGITUDE, ORIENTATION, WIDTH, HEIGHT... THUMBNAIL <- may help strava not crash?
 
-        downloaderService.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+        syncService.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
     }
 
     private fun moveDownload(resource: OlyEntry, partial: File): File {
