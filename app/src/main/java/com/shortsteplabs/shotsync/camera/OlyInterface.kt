@@ -24,73 +24,22 @@ import com.shortsteplabs.shotsync.HttpHelper
 import org.xmlpull.v1.XmlPullParser
 import java.io.File
 import java.io.StringReader
+import java.text.SimpleDateFormat
 import java.util.*
 
 
-/*
-class OlyEntry constructor(entry: String) : Comparable<OlyEntry> {
-    var dirname: String
-    var filename: String
-    val bytes: Int
-
-    init {
-        val split = entry.split(',')
-        dirname = split[0]
-        filename = split[1]
-        bytes = split[2].toInt()
-
-        // 512 days are allocated to each year, 32 days each month.
-        //  The extra 128 days (4 months worth) are added at the end of the year.
-        // Raw Data, the first of each month from Jan 2002 to Jan 2003:
-        //    11297, 11329, 11361, 11393, 11425, 11457, 11489, 11521, 11553, 11585, 11585, 11617, 11649, 11809
-        // We do not know if the camera timezone is identical to the phone timezone :/
-        //  In fact, the time is automatically set from the phone every time OIShare is connected.
-        val sortdate = split[4].toInt()
-
-        // each tick = 2 seconds. 32 are allocated to each minute, 2048 are allocated to each hour.
-        val sorttime = split[5].toInt()
-
-        val year = 1980 + sortdate/512
-        val month = (sortdate % 512) / 32
-        val day = (sortdate % 32)
-        val hour = sorttime / 2048
-        val minute = (sorttime % 2048) / 32
-        val second = (sorttime % 32) * 2
-
-        // store into a unix timestamp
-
-    }
-
-    fun extension(): String {
-        return if (filename.contains('.')) filename.split('.')[1] else ""
-    }
-    fun getPath(): String {
-        return "$dirname/$filename"
-    }
-
-    // TODO: put the above into a standard date/time object
-
-    override fun toString(): String {
-        return "${getPath()}: ${bytes}b, $year/$month/$day, $hour:$minute:$second,"
-    }
-
-    override fun compareTo(other: OlyEntry) = when {
-        sortdate != other.sortdate -> sortdate - other.sortdate
-        sorttime != other.sorttime -> sorttime - other.sorttime
-        filename != other.filename -> filename.compareTo(other.filename)
-        else -> 0
-    }
-}
- */
 
 // https://en.wikipedia.org/wiki/Design_rule_for_Camera_File_system - defines clustering?
-class OlyEntry constructor(entry: String) : Comparable<OlyEntry> {
-    private val split = entry.split(',')
-    val dirname = split[0]
+class OlyEntry constructor(entry: String, tzOffset: Long) : Comparable<OlyEntry> {
+    val split = entry.split(',')
+    val dirname= split[0]
     val filename = split[1]
-    val extension = if (filename.contains('.')) filename.split('.')[1] else ""
     val path = "$dirname/$filename"
+    val extension = if (filename.contains('.')) filename.split('.')[1] else ""
+    val baseName = if (filename.contains('.')) filename.split('.')[0] else ""
     val bytes = split[2].toLong()
+    val time: Long
+
 
     // 512 days are allocated to each year, 32 days each month.
     //  The extra 128 days (4 months worth) are added at the end of the year.
@@ -103,18 +52,21 @@ class OlyEntry constructor(entry: String) : Comparable<OlyEntry> {
     // each tick = 2 seconds. 32 are allocated to each minute, 2048 are allocated to each hour.
     val sorttime = split[5].toInt()
 
-    val year = 1980 + sortdate/512
+    val year = 1980 + sortdate / 512
     val month = (sortdate % 512) / 32
     val day = (sortdate % 32)
     val hour = sorttime / 2048
     val minute = (sorttime % 2048) / 32
     val second = (sorttime % 32) * 2
 
-    // TODO: account for last time zone set
-    val timestamp = GregorianCalendar(year, month, day, hour, minute, second).timeInMillis
+    init {
+        time = GregorianCalendar(year, month, day, hour, minute, second).timeInMillis - tzOffset
+    }
 
     override fun toString(): String {
-        return "$path: ${bytes}b, $year/$month/$day, $hour:$minute:$second,"
+        val formatter = SimpleDateFormat("yyyy/MM/dd, HH:mm:ss")
+        val t = formatter.format(Date(time))
+        return "$path: ${bytes}b, $t"
     }
 
     override fun compareTo(other: OlyEntry) = when {
@@ -131,14 +83,14 @@ object OlyInterface {
     /**
      * returns all resources found, ordered from oldest to newest.
      */
-    fun listResources(client: HttpHelper): List<OlyEntry> {
-        Log.d(TAG, "listResources")
-        val dirs = listDir(client, "/DCIM")
+    fun listFiles(client: HttpHelper, tzOffset: Long=0): List<OlyEntry> {
+        Log.d(TAG, "listFiles")
+        val dirs = listDir(client, "/DCIM", tzOffset)
 
         val resources = mutableListOf<OlyEntry>()
 
         for (dir in dirs) {
-            val result = listDir(client, dir.path)
+            val result = listDir(client, dir.path, tzOffset)
             resources.addAll(result)
         }
 
@@ -217,12 +169,12 @@ object OlyInterface {
         return ""
     }
 
-    private fun listDir(client: HttpHelper, path: String): List<OlyEntry> {
+    private fun listDir(client: HttpHelper, path: String, tzOffset: Long): List<OlyEntry> {
         Log.d(TAG, "listDir")
         val response = client.get("http://192.168.0.10/get_imglist.cgi?DIR="+path)
         Log.d(TAG, "converting to file entries")
         val split = response.trim().split("\r\n")
-        val entries = split.slice(1 until split.size).map { line -> OlyEntry(line) }
+        val entries = split.slice(1 until split.size).map { line -> OlyEntry(line, tzOffset) }
         Log.d(TAG, "found ${entries.size} entries")
         return entries
     }

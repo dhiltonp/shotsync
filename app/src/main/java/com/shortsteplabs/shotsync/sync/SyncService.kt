@@ -66,7 +66,7 @@ class SyncService : ManualIntentService("SyncService") {
         val camera = DB.getInstance(this).cameraDao().findBySSID(ssid)
         if (camera != null) {
             bindNetwork(this, network)
-            syncer!!.startDownload()
+            syncer!!.startDownload(camera)
         }
     }
 

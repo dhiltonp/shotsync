@@ -30,6 +30,9 @@ class Camera {
     var filesDownloaded = 0
     var timeAdded = 0L
     var timeLastSynced = 0L
+    // offset is the number of milliseconds to add to UTC to get local time.
+    // To convert from local time to UTC, *subtract* the offset.
+    var lastTimeZoneOffset = 0L
 }
 
 @Dao

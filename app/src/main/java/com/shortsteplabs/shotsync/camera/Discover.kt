@@ -45,6 +45,7 @@ class Discover {
             val camera = Camera()
             camera.ssid = ssid
             camera.timeAdded = Date().time
+            camera.lastTimeZoneOffset = TimeZone.getDefault().getOffset(Date().time).toLong()
 
             val client = HttpHelper()
 

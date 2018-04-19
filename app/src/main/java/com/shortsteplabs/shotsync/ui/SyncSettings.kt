@@ -50,7 +50,6 @@ class SyncSettingsFragment: PreferenceFragment() {
 
         // TODO: disable Download check box if we don't have file permissions
         //  related: require download check box and file permissions to actually download
-
     }
 
     override fun onStop() {

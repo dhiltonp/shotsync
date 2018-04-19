@@ -9,9 +9,9 @@ import org.junit.Test
  */
 class OlyEntryTest {
     // Samples from an E-M5 II.
-    private val DIR = OlyEntry("/DCIM,117OLYMP,0,16,19347,43969")
-    private val ORF = OlyEntry("/DCIM/117OLYMP,P3302284.ORF,13928637,0,19582,31629")
-    private val JPG = OlyEntry("/DCIM/117OLYMP,PC211339.JPG,2835602,0,19349,26638")
+    private val DIR = OlyEntry("/DCIM,117OLYMP,0,16,19347,43969", 0)
+    private val ORF = OlyEntry("/DCIM/117OLYMP,P3302284.ORF,13928637,0,19582,31629", 0)
+    private val JPG = OlyEntry("/DCIM/117OLYMP,PC211339.JPG,2835602,0,19349,26638", 0)
 
     @Test
     fun getDirname() {
@@ -62,9 +62,9 @@ class OlyEntryTest {
         assertEquals(26638, JPG.sorttime)
     }
 
-    private val jan1_2002 = OlyEntry(",,0,0,11297,0")
-    private val dec1_2002 = OlyEntry(",,0,0,11649,0")
-    private val jan1_2003 = OlyEntry(",,0,0,11809,0")
+    private val jan1_2002 = OlyEntry(",,0,0,11297,0", 0)
+    private val dec1_2002 = OlyEntry(",,0,0,11649,0", 0)
+    private val jan1_2003 = OlyEntry(",,0,0,11809,0", 0)
 
     @Test
     fun getYear() {
@@ -86,17 +86,17 @@ class OlyEntryTest {
         assertEquals(1, dec1_2002.day)
         assertEquals(1, jan1_2003.day)
 
-        val may21_2002 = OlyEntry(",,0,0,11445,0")
+        val may21_2002 = OlyEntry(",,0,0,11445,0", 0)
         assertEquals(21, may21_2002.day)
     }
 
     // tH_MM_SS
-    private val t0_00_00 = OlyEntry(",,0,0,0,0")
-    private val t0_01_00 = OlyEntry(",,0,0,0,32")
-    private val t0_02_00 = OlyEntry(",,0,0,0,64")
-    private val t0_59_00 = OlyEntry(",,0,0,0,1888")
-    private val t1_00_00 = OlyEntry(",,0,0,0,2048")
-    private val t23_59_58 = OlyEntry(",,0,0,0,49021")
+    private val t0_00_00 = OlyEntry(",,0,0,0,0", 0)
+    private val t0_01_00 = OlyEntry(",,0,0,0,32", 0)
+    private val t0_02_00 = OlyEntry(",,0,0,0,64", 0)
+    private val t0_59_00 = OlyEntry(",,0,0,0,1888", 0)
+    private val t1_00_00 = OlyEntry(",,0,0,0,2048", 0)
+    private val t23_59_58 = OlyEntry(",,0,0,0,49021", 0)
 
     @Test
     fun getHour() {
@@ -128,20 +128,20 @@ class OlyEntryTest {
 
     @Test
     fun compareTo() {
-        val fileA = OlyEntry(",A,0,0,0,0")
-        val fileB = OlyEntry(",B,0,0,0,0")
+        val fileA = OlyEntry(",A,0,0,0,0", 0)
+        val fileB = OlyEntry(",B,0,0,0,0", 0)
         assertTrue(t0_00_00 < t1_00_00)
         assertTrue(jan1_2002 < jan1_2003)
         assertTrue(fileA<fileB)
 
         // date is more significant than time
-        val before = OlyEntry(",,0,0,0,1")
-        val after = OlyEntry(",,0,0,10,0")
+        val before = OlyEntry(",,0,0,0,1", 0)
+        val after = OlyEntry(",,0,0,10,0", 0)
         assertTrue(before < after)
 
         // time is more significant than filename
-        val fileA1 = OlyEntry(",A,0,0,0,1")
-        val fileB1 = OlyEntry(",B,0,0,0,0")
+        val fileA1 = OlyEntry(",A,0,0,0,1", 0)
+        val fileB1 = OlyEntry(",B,0,0,0,0", 0)
         assertTrue(fileB1<fileA1)
 
         // identical entries are identical

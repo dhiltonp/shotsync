@@ -24,11 +24,11 @@
     <string name="maintain_utc_title">Maintain UTC</string>
     <string name="maintain_utc_warning">Conflicts with official app</string>
     <string name="category_files_key">category_files</string>
-    <string name="category_files_title">Download</string>
+    <string name="category_files_title">Files</string>
     <string name="sync_period_key">sync_period</string>
     <string name="sync_period_title">Sync Period</string>
-    <string name="download_jpg_key">download_jpg</string>
-    <string name="download_raw_key">download_raw</string>
-    <string name="download_video_key">download_video</string>
-    <string name="download_video_warning">Can drain a lot of battery</string>
+    <string name="sync_jpg_key">sync_jpg</string>
+    <string name="sync_raw_key">sync_raw</string>
+    <string name="sync_video_key">sync_video</string>
+    <string name="sync_video_warning">Can drain a lot of battery</string>
 </resources>

@@ -33,23 +33,23 @@
         android:title="@string/category_files_title"
         android:dependency="@string/sync_files_key">
         <ListPreference
-            android:defaultValue="86400"
+            android:defaultValue="86400000"
             android:entries="@array/sync_period_titles"
             android:entryValues="@array/sync_period_values"
             android:key="@string/sync_period_key"
             android:title="@string/sync_period_title" />
         <CheckBoxPreference
             android:defaultValue="true"
-            android:key="@string/download_jpg_key"
+            android:key="@string/sync_jpg_key"
             android:title="JPG" />
         <CheckBoxPreference
             android:defaultValue="false"
-            android:key="@string/download_raw_key"
+            android:key="@string/sync_raw_key"
             android:title="RAW" />
         <CheckBoxPreference
             android:defaultValue="false"
-            android:key="@string/download_video_key"
-            android:summary="@string/download_video_warning"
+            android:key="@string/sync_video_key"
+            android:summary="@string/sync_video_warning"
             android:title="Video" />
     </PreferenceCategory>
     <PreferenceCategory

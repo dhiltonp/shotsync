@@ -17,13 +17,13 @@
         <item>@string/all_time</item>
     </string-array>
     <string-array name="sync_period_values">
-        <!--seconds in time window-->
-        <item>21600</item>
-        <item>86400</item>
-        <item>604800</item>
-        <item>2419200</item>
-        <item>31536000</item>
-        <item>2147483647</item>
+        <!--milliseconds in period-->
+        <item>21600000</item>
+        <item>86400000</item>
+        <item>604800000</item>
+        <item>2419200000</item>
+        <item>31536000000</item>
+        <item>0</item>
     </string-array>
     <string name="past_six_hours">Past 6 hours</string>
     <string name="past_day">Past day</string>
