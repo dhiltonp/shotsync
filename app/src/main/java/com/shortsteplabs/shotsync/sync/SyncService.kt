@@ -60,13 +60,12 @@ class SyncService : ManualIntentService("SyncService") {
         }
 
         if (syncer == null) {
-            syncer = Syncer(this)
-        }
-
-        val camera = DB.getInstance(this).cameraDao().findBySSID(ssid)
-        if (camera != null) {
-            bindNetwork(this, network)
-            syncer!!.startDownload(camera)
+            val camera = DB.getInstance(this).cameraDao().findBySSID(ssid)
+            if (camera != null) {
+                bindNetwork(this, network)
+                syncer = Syncer(this, camera)
+                syncer!!.startSync()
+            }
         }
     }
 

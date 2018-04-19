@@ -31,6 +31,7 @@ import java.util.*
 
 // https://en.wikipedia.org/wiki/Design_rule_for_Camera_File_system - defines clustering?
 class OlyEntry constructor(entry: String, tzOffset: Long) : Comparable<OlyEntry> {
+    val entry = entry
     val split = entry.split(',')
     val dirname= split[0]
     val filename = split[1]
@@ -60,7 +61,9 @@ class OlyEntry constructor(entry: String, tzOffset: Long) : Comparable<OlyEntry>
     val second = (sorttime % 32) * 2
 
     init {
-        time = GregorianCalendar(year, month, day, hour, minute, second).timeInMillis - tzOffset
+        val cal = GregorianCalendar(year, month-1, day, hour, minute, second)
+        cal.timeZone = TimeZone.getTimeZone("UTC")
+        time = cal.timeInMillis - tzOffset
     }
 
     override fun toString(): String {

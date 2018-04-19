@@ -52,7 +52,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem?) = when (item!!.itemId) {
         R.id.action_settings -> {
-            startActivity(Intent(this, SyncSettingsActivity::class.java))
+            val intent = Intent(this, CameraSettingsActivity::class.java)
+            intent.putExtra(CAMERA_ID, 1)
+            startActivity(intent)
             true
         }
         else ->super.onOptionsItemSelected(item)

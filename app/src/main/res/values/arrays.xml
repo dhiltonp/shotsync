@@ -5,8 +5,8 @@
         <item>@string/sync_while_shooting</item>
     </string-array>
     <string-array name="default_sync_mode_values">
-        <item>Sync then Off</item>
-        <item>Sync while Shooting</item>
+        <item>@string/sync_then_off_value</item>
+        <item>@string/sync_while_shooting_value</item>
     </string-array>
     <string-array name="sync_period_titles">
         <item>@string/past_six_hours</item>
@@ -31,6 +31,8 @@
     <string name="past_month">Past month</string>
     <string name="past_year">Past year</string>
     <string name="all_time">All time</string>
-    <string name="sync_while_shooting">Sync while Shooting</string>
     <string name="sync_then_off">Sync then Off</string>
+    <string name="sync_then_off_value">Sync then Off</string>
+    <string name="sync_while_shooting">Sync while Shooting</string>
+    <string name="sync_while_shooting_value">Sync while Shooting</string>
 </resources>

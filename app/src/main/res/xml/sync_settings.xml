@@ -48,8 +48,8 @@
             android:title="RAW" />
         <CheckBoxPreference
             android:defaultValue="false"
-            android:key="@string/sync_video_key"
-            android:summary="@string/sync_video_warning"
+            android:key="@string/sync_vid_key"
+            android:summary="@string/sync_vid_warning"
             android:title="Video" />
     </PreferenceCategory>
     <PreferenceCategory

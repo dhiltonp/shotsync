@@ -52,6 +52,9 @@ interface FileDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertNew(vararg files: File)
 
+    @Update
+    fun update(file: File)
+
     @Delete
     fun delete(file: File)
 }

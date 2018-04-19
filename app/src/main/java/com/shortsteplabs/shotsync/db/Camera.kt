@@ -33,6 +33,18 @@ class Camera {
     // offset is the number of milliseconds to add to UTC to get local time.
     // To convert from local time to UTC, *subtract* the offset.
     var lastTimeZoneOffset = 0L
+
+    var defaultSyncMode = "Sync then Off"
+    var syncFiles = true
+    var syncGPS = true
+    var syncTime = true
+
+    var syncPeriod = 86400000L
+    var syncJPG = true
+    var syncRAW = false
+    var syncVID = false
+
+    var maintainUTC = false
 }
 
 @Dao
@@ -43,11 +55,17 @@ interface CameraDao {
     @Query("SELECT * FROM camera WHERE id IN (:cameraIds)")
     fun loadAllByIds(cameraIds: IntArray): List<Camera>
 
+    @Query("SELECT * FROM camera WHERE id = :id")
+    fun findByID(id: Int): Camera
+
     @Query("SELECT * FROM camera WHERE ssid = :ssid")
     fun findBySSID(ssid: String): Camera?
 
     @Insert
     fun insertAll(vararg cameras: Camera)
+
+    @Update
+    fun update(camera: Camera)
 
     @Delete
     fun delete(camera: Camera)

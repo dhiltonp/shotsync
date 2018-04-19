@@ -147,4 +147,25 @@ class OlyEntryTest {
         // identical entries are identical
         assertFalse(DIR<DIR)
     }
+
+    private val t23_59_58_jan1_2002 = OlyEntry(",,0,0,11297,49021", 0)
+
+    @Test
+    fun time() {
+        assertEquals(1009843200000, jan1_2002.time)
+        assertEquals(1009929598000, t23_59_58_jan1_2002.time)
+    }
+
+    @Test
+    fun tzOffset() {
+        val mountainTime = -21600000L // -6:00h
+        val t23_59_58_jan1_2002_mountain = OlyEntry(",,0,0,11297,49021", mountainTime)
+        val jan1_2002_mountain = OlyEntry(",,0,0,11297,0", mountainTime)
+
+        val t05_59_58_jan2_2002_utc = 1009951198000
+        val t06_00_00_jan1_2002_utc = 1009864800000
+
+        assertEquals(t05_59_58_jan2_2002_utc, t23_59_58_jan1_2002_mountain.time)
+        assertEquals(t06_00_00_jan1_2002_utc, jan1_2002_mountain.time)
+    }
 }

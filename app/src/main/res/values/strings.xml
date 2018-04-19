@@ -29,6 +29,6 @@
     <string name="sync_period_title">Sync Period</string>
     <string name="sync_jpg_key">sync_jpg</string>
     <string name="sync_raw_key">sync_raw</string>
-    <string name="sync_video_key">sync_video</string>
-    <string name="sync_video_warning">Can drain a lot of battery</string>
+    <string name="sync_vid_key">sync_vid</string>
+    <string name="sync_vid_warning">Takes a long time, uses a lot of battery</string>
 </resources>

@@ -5,7 +5,6 @@ import android.content.ContentValues
 import android.content.pm.PackageManager
 import android.os.Environment
 import android.os.StatFs
-import android.preference.PreferenceManager
 import android.provider.MediaStore
 import android.support.v4.app.ActivityCompat
 import android.util.Log
@@ -37,39 +36,32 @@ import java.util.*
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
-class Syncer(val syncService: SyncService) {
+class Syncer(val syncService: SyncService, val camera: Camera) {
     val TAG = "Syncer"
     val notification = SyncNotification(syncService)
     val client = HttpHelper()
-    var camera: Camera? = null
     var downloaded = 0
 
     var downloading = false
 
     fun cleanup() {
         notification.clearStatus()
+        syncService.stopSelf()
     }
 
-    fun startDownload(camera: Camera) {
+    fun startSync() {
         Log.d(TAG, "Starting downloadLoop")
 //            downloading = true
 
-        this.camera = camera
-
-
-        notification.status("Starting Download", "Connecting to camera.")
+        notification.status("Starting Sync", "Connecting to camera.")
 
         // TODO: do the following asynchronously, stopSelf when it stops running. also allow cancellation.
         try {
-//            OlyInterface.connect(client)
-//            downloadLoop(client)
             syncLoop()
         } catch (e: HttpHelper.NoConnection) {
-            notification.clearable("Download stopped", "Unable to connect")
-//                stopSelf()
-            return
+            notification.clearable("Sync stopped", "Unable to connect")
         }
+        cleanup()
     }
 
     private fun syncLoop() {
@@ -80,21 +72,18 @@ class Syncer(val syncService: SyncService) {
 //            enableShooting?() // interactive
 //            geotagFiles() // (also update file.bytes when done)
             downloadFiles()
-            maybeShutdownCamera()
+            if (camera.defaultSyncMode == syncService.getString(R.string.sync_then_off_value)) {
+                OlyInterface.shutdown(client)
+                break
+            }
         }
     }
 
-    private fun maybeShutdownCamera() {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(syncService)
-        val mode = prefs.getString(syncService.getString(R.string.sync_mode_key), "")
-        if (mode == "Sync then Off") {
-            OlyInterface.shutdown(client)
-        }
-    }
 
     private fun discoverFiles() {
+        notification.status("Syncing with ${camera.model}", "Scanning available files")
         val files = mutableListOf<com.shortsteplabs.shotsync.db.File>()
-        for (file in OlyInterface.listFiles(client, camera!!.lastTimeZoneOffset)) {
+        for (file in OlyInterface.listFiles(client, camera.lastTimeZoneOffset)) {
             val f = com.shortsteplabs.shotsync.db.File()
             f.bytes = file.bytes
             f.extension = file.extension
@@ -106,42 +95,43 @@ class Syncer(val syncService: SyncService) {
     }
 
     private fun downloadFiles() {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(syncService)
+        if (!camera.syncFiles) return
 
-        val download = prefs.getBoolean(syncService.getString(R.string.sync_files_key), false)
-        if (!download) return
+        notification.status("Syncing with ${camera.model}", "Selecting files for download")
+        val oldest = if (camera.syncPeriod > 0L) Date().time - camera.syncPeriod else 0L
 
-        val period = prefs.getString(syncService.getString(R.string.sync_period_key), "0").toLong()
-        val oldest = if (period > 0L) Date().time - period else 0L
-
-        val dbFiles = mutableSetOf<String>()
+        val dbFiles = mutableMapOf<String, com.shortsteplabs.shotsync.db.File>()
         for (file in DB.getInstance(syncService).fileDao().toDownload(oldest)) {
             if (shouldWrite(file)) {
-                dbFiles.add(file.filename())
+                dbFiles.put(file.filename(), file)
+//                dbFiles.add(file.filename())
             }
+        }
+
+        if (dbFiles.size == 0) {
+            notification.status("Syncing with ${camera.model}", "No new files to download!")
+            return
         }
 
         for (file in OlyInterface.listFiles(client)) {
             // also, cooperatively check for 'cancel' or 'stop'
             if (file.filename !in dbFiles) continue
             if (!canWrite(file.bytes)) break
-            notification.status("Downloading from ${camera!!.model}", "$downloaded/${dbFiles.size} new: ${file.filename}")
+            notification.status("Syncing with ${camera.model}", "Downloading ${downloaded+1}/${dbFiles.size} new: ${file.filename}")
             downloadFile(file)
+            dbFiles[file.filename]!!.downloaded = true
+            DB.getInstance(syncService).fileDao().update(dbFiles[file.filename]!!)
             downloaded++
         }
+        notification.clearable("Syncing with ${camera.model}", "$downloaded new files downloaded!")
     }
 
     fun shouldWrite(file: com.shortsteplabs.shotsync.db.File): Boolean {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(syncService)
-        val jpg = prefs.getBoolean(syncService.getString(R.string.sync_jpg_key), true)
-        val raw = prefs.getBoolean(syncService.getString(R.string.sync_raw_key), false)
-        val vid = prefs.getBoolean(syncService.getString(R.string.sync_video_key), false)
-
         val mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension)
         return when {
-            mime == "image/jpg" -> jpg
-            mime.startsWith("image/") -> raw
-            mime.startsWith("video/") -> vid
+            mime == "image/jpeg" -> camera.syncJPG
+            mime.startsWith("image/") -> camera.syncRAW
+            mime.startsWith("video/") -> camera.syncVID
             else -> false
         }
     }
@@ -187,11 +177,9 @@ class Syncer(val syncService: SyncService) {
         }
     }
 
-
-
     private fun downloadLoop(client: HttpHelper) {
 //        val camera = OlyInterface.getCamInfo(client)
-        notification.status("Starting Download", "Connected to ${camera!!.model}, discovering new files.")
+//        notification.status("Starting Download", "Connected to ${camera.model}, discovering new files.")
 
         var toDownload = 0
         var downloaded = 0
@@ -200,7 +188,7 @@ class Syncer(val syncService: SyncService) {
             // which resources to downloadFiles?
             val newResources = mutableListOf<OlyEntry>()
             val now = Date()
-            for (resource in OlyInterface.listFiles(client, camera!!.lastTimeZoneOffset)) {
+            for (resource in OlyInterface.listFiles(client, camera.lastTimeZoneOffset)) {
 //                if (resource.year == 1900 + now.year && resource.month == now.month + 1 && resource.day == now.date &&
 //                        resource.extension == "ORF") {
                     newResources.add(resource)
@@ -212,7 +200,7 @@ class Syncer(val syncService: SyncService) {
 
                 if (hasWritePermission()) {
                     downloaded++
-                    notification.status("Downloading from ${camera!!.model}", "$downloaded/$toDownload new: ${resource.filename}")
+                    notification.status("Syncing with ${camera.model}", "$downloaded/$toDownload new: ${resource.filename}")
 
                     if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
                         notification.clearable("Error", "Storage permissions not granted")
@@ -238,12 +226,12 @@ class Syncer(val syncService: SyncService) {
                     }
                 }
             }
-            notification.clearable("Downloading from ${camera!!.model}", "$downloaded downloaded, shutting down.")
+            notification.clearable("Syncing with ${camera.model}", "$downloaded downloaded, shutting down.")
 
             OlyInterface.shutdown(client)
             //stopSelf()
         } catch (e: HttpHelper.NoConnection) {
-            notification.clearable("Download from ${camera!!.model} interrupted", "$downloaded/$toDownload downloaded")
+            notification.clearable("Sync with ${camera.model} interrupted", "$downloaded/$toDownload downloaded")
         } finally {
             //stopSelf()
         }
