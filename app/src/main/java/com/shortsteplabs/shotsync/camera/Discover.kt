@@ -2,8 +2,8 @@ package com.shortsteplabs.shotsync.camera
 
 import android.content.Context
 import com.shortsteplabs.shotsync.HttpHelper
-import com.shortsteplabs.shotsync.db.Camera
 import com.shortsteplabs.shotsync.db.DB
+import com.shortsteplabs.shotsync.db.getCamera
 import com.shortsteplabs.shotsync.util.NoWifi
 import com.shortsteplabs.shotsync.util.bindNetwork
 import com.shortsteplabs.shotsync.util.getWifiConnection
@@ -41,8 +41,7 @@ class Discover {
         if (match?.ssid != ssid) {
             bindNetwork(context, network)
 
-            // populate data
-            val camera = Camera()
+            val camera = getCamera(DB.getInstance(context), 1)
             camera.ssid = ssid
             camera.timeAdded = Date().time
             camera.lastTimeZoneOffset = TimeZone.getDefault().getOffset(Date().time).toLong()
@@ -56,7 +55,7 @@ class Discover {
                 return "Not connected to compatible camera"
             }
 
-            DB.getInstance(context).cameraDao().insertAll(camera)
+            DB.getInstance(context).cameraDao().update(camera)
             return "Added ${camera.model}, ready to Sync!"
         } else {
             return "Already added $ssid, ready to Sync!"

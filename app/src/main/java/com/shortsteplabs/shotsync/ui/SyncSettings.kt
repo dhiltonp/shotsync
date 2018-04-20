@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity
 import com.shortsteplabs.shotsync.R
 import com.shortsteplabs.shotsync.db.Camera
 import com.shortsteplabs.shotsync.db.DB
+import com.shortsteplabs.shotsync.db.getCamera
 
 /**
 * Copyright (C) 2018  David Hilton <david.hilton.p@gmail.com>
@@ -62,7 +63,7 @@ class CameraSettingsFragment: PreferenceFragment() {
         val camera_id = arguments.getInt(CAMERA_ID)
         class load: AsyncTask<Context, Void, Camera>() {
             override fun doInBackground(vararg params: Context?): Camera {
-                camera = DB.getInstance(activity).cameraDao().findByID(camera_id)
+                camera = getCamera(DB.getInstance(activity), camera_id)
                 return camera!!
             }
         }

@@ -78,17 +78,8 @@ class Permissions(private val activity: Activity): FragmentActivity() {
     }
 
     fun firstRun() {
-        val pref = activity.getPreferences(Context.MODE_PRIVATE)
-        val lastVersion = pref.getInt(activity.getString(R.string.version_code), -1)
-        val thisVersion = activity.packageManager.getPackageInfo(activity.packageName, 0).versionCode
-        if (lastVersion != thisVersion) {
-            requestFilePermissions()
-            requestIgnoreBattery()
-            with(pref.edit()) {
-                putInt(activity.getString(R.string.version_code), thisVersion)
-                commit()
-            }
-        }
+        requestFilePermissions()
+        requestIgnoreBattery()
     }
 
     fun updateSyncDownloadSetting() {

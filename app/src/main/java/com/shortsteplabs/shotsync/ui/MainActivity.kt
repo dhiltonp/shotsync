@@ -5,6 +5,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
@@ -42,7 +43,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        perms.firstRun()
+        firstRun()
+    }
+
+    fun firstRun() {
+        val pref = PreferenceManager.getDefaultSharedPreferences(this)
+        val lastVersion = pref.getInt(this.getString(R.string.version_code), -1)
+        val thisVersion = this.packageManager.getPackageInfo(this.packageName, 0).versionCode
+
+        if (lastVersion != thisVersion) {
+            Permissions(this).firstRun()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -64,9 +75,9 @@ class MainActivity : AppCompatActivity() {
         startSync(this)
     }
 
-    fun addCamera(view: View) {
+    fun pairCamera(view: View) {
         val builder = AlertDialog.Builder(this)
-        builder.setMessage("Please connect to your camera, then continue.")
+        builder.setMessage("Please turn on your camera's wifi, connect to it, then continue.")   // mom ignored this popup, just clicking "continue"
         builder.setPositiveButton("Continue", fun(dialog: DialogInterface?, id: Int) {
             class discover: AsyncTask<Context, Void, String>() {
                 override fun doInBackground(vararg params: Context?): String {

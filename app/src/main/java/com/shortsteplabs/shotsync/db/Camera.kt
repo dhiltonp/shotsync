@@ -56,7 +56,7 @@ interface CameraDao {
     fun loadAllByIds(cameraIds: IntArray): List<Camera>
 
     @Query("SELECT * FROM camera WHERE id = :id")
-    fun findByID(id: Int): Camera
+    fun findByID_Use_getCamera(id: Int): Camera?
 
     @Query("SELECT * FROM camera WHERE ssid = :ssid")
     fun findBySSID(ssid: String): Camera?
@@ -69,4 +69,13 @@ interface CameraDao {
 
     @Delete
     fun delete(camera: Camera)
+}
+
+fun getCamera(db: DB, id: Int=1): Camera {
+    var camera = db.cameraDao().findByID_Use_getCamera(id)
+    if (camera == null) {
+        db.cameraDao().insertAll(Camera())
+        camera = db.cameraDao().findByID_Use_getCamera(id)
+    }
+    return camera!!
 }
