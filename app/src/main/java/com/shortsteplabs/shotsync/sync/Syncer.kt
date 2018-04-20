@@ -126,14 +126,18 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         notification.clearable("Syncing with ${camera.model}", "$downloaded new files downloaded!")
     }
 
-    fun shouldWrite(file: com.shortsteplabs.shotsync.db.File): Boolean {
-        val mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension)
-        return when {
-            mime == "image/jpeg" -> camera.syncJPG
-            mime.startsWith("image/") -> camera.syncRAW
-            mime.startsWith("video/") -> camera.syncVID
-            else -> false
-        }
+    companion object {
+        val jpg = setOf("JPG", "JPEG")
+        val raw = setOf("ARW", "CR2", "CRW", "DCR", "DNG", "ERF", "K25", "KDC",
+                "MRW", "NEF", "ORF", "PEF", "RAF", "RAW", "SR2", "SRF", "X3F")
+        val vid = setOf("mp4", "3gp", "mov", "avi", "wmv")
+    }
+
+    fun shouldWrite(file: com.shortsteplabs.shotsync.db.File) = when (file.extension.toUpperCase()) {
+        in jpg -> camera.syncJPG
+        in raw -> camera.syncRAW
+        in vid -> camera.syncVID
+        else -> false
     }
 
     fun canWrite(bytes: Long): Boolean {
