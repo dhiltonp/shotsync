@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.support.design.widget.Snackbar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
@@ -73,15 +74,41 @@ class MainActivity : AppCompatActivity() {
 
     fun startSync(view: View) {
         startSync(this)
+        val notification = Snackbar.make(
+                this.findViewById(android.R.id.content),
+                "Sync started, watch notifications for updates!",
+                Snackbar.LENGTH_LONG)
+        notification.show()
     }
 
     fun pairCamera(view: View) {
+        val activity = this
+
         val builder = AlertDialog.Builder(this)
         builder.setMessage("Please turn on your camera's wifi, connect to it, then continue.")   // mom ignored this popup, just clicking "continue"
         builder.setPositiveButton("Continue", fun(dialog: DialogInterface?, id: Int) {
-            class discover: AsyncTask<Context, Void, String>() {
-                override fun doInBackground(vararg params: Context?): String {
+            class discover: AsyncTask<Context, Void, Discover.DiscoverResult>() {
+                override fun doInBackground(vararg params: Context?): Discover.DiscoverResult {
                     return Discover().discover(params[0]!!)
+                }
+
+                override fun onPostExecute(result: Discover.DiscoverResult?) {
+                    super.onPostExecute(result)
+                    if (result != null) {
+                        if (result.success) {
+                            val notification = Snackbar.make(
+                                    activity.findViewById(android.R.id.content),
+                                    result.text,
+                                    Snackbar.LENGTH_LONG)
+                            notification.show()
+                        } else {
+                            val notification = Snackbar.make(
+                                    activity.findViewById(android.R.id.content),
+                                    result.text,
+                                    Snackbar.LENGTH_INDEFINITE)
+                            notification.show()
+                        }
+                    }
                 }
             }
             discover().execute(this)

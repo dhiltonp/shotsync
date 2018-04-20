@@ -29,12 +29,13 @@ import java.util.*
 class Discover {
     val TAG = "Discover"
 
-    fun discover(context: Context): String {
+    data class DiscoverResult(val success: Boolean, val text: String)
+    fun discover(context: Context): DiscoverResult {
         // detect camera on current wifi, add camera to DB, enable buttons/change text?
         val (ssid, network) = try {
             getWifiConnection(context)
         } catch (e: NoWifi) {
-            return "Not connected to WiFi"
+            return DiscoverResult(false,"Not connected to WiFi")
         }
 
         val match = DB.getInstance(context).cameraDao().findBySSID(ssid)
@@ -52,13 +53,13 @@ class Discover {
                 camera.model = OlyInterface.getCamInfo(client)
                 camera.apiVersion = OlyInterface.getVersion(client)
             } catch (e: HttpHelper.NoConnection) {
-                return "Not connected to compatible camera"
+                return DiscoverResult(false,"Not connected to compatible camera; double-check wifi?")
             }
 
             DB.getInstance(context).cameraDao().update(camera)
-            return "Added ${camera.model}, ready to Sync!"
+            return DiscoverResult(true,"Added ${camera.model}, ready to sync!")
         } else {
-            return "Already added $ssid, ready to Sync!"
+            return DiscoverResult(true,"Already added $ssid, ready to sync!")
         }
     }
 }

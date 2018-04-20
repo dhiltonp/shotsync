@@ -15,6 +15,7 @@ import com.shortsteplabs.shotsync.camera.OlyEntry
 import com.shortsteplabs.shotsync.camera.OlyInterface
 import com.shortsteplabs.shotsync.db.Camera
 import com.shortsteplabs.shotsync.db.DB
+import com.shortsteplabs.shotsync.db.DBFile
 import com.shortsteplabs.shotsync.ui.SyncNotification
 import java.io.File
 import java.util.*
@@ -82,9 +83,9 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
 
     private fun discoverFiles() {
         notification.status("Syncing with ${camera.model}", "Scanning available files")
-        val files = mutableListOf<com.shortsteplabs.shotsync.db.File>()
+        val files = mutableListOf<DBFile>()
         for (file in OlyInterface.listFiles(client, camera.lastTimeZoneOffset)) {
-            val f = com.shortsteplabs.shotsync.db.File()
+            val f = DBFile()
             f.bytes = file.bytes
             f.extension = file.extension
             f.time = file.time
@@ -100,11 +101,10 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         notification.status("Syncing with ${camera.model}", "Selecting files for download")
         val oldest = if (camera.syncPeriod > 0L) Date().time - camera.syncPeriod else 0L
 
-        val dbFiles = mutableMapOf<String, com.shortsteplabs.shotsync.db.File>()
+        val dbFiles = mutableMapOf<String, DBFile>()
         for (file in DB.getInstance(syncService).fileDao().toDownload(oldest)) {
             if (shouldWrite(file)) {
-                dbFiles.put(file.filename(), file)
-//                dbFiles.add(file.filename())
+                dbFiles[file.filename()] = file
             }
         }
 
@@ -133,7 +133,7 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         val vid = setOf("mp4", "3gp", "mov", "avi", "wmv")
     }
 
-    fun shouldWrite(file: com.shortsteplabs.shotsync.db.File) = when (file.extension.toUpperCase()) {
+    fun shouldWrite(file: DBFile) = when (file.extension.toUpperCase()) {
         in jpg -> camera.syncJPG
         in raw -> camera.syncRAW
         in vid -> camera.syncVID

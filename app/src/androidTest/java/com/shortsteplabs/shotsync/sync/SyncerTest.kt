@@ -3,7 +3,7 @@ package com.shortsteplabs.shotsync.sync
 //  import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4
 import com.shortsteplabs.shotsync.db.Camera
-import com.shortsteplabs.shotsync.db.File
+import com.shortsteplabs.shotsync.db.DBFile
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,7 +42,7 @@ class SyncerTest {
     fun shouldWrite() {
         val camera = Camera()
         val syncer = Syncer(SyncService(), camera)
-        val file = File()
+        val file = DBFile()
 
         file.extension = "jpg"
         camera.syncJPG = true

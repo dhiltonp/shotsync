@@ -27,7 +27,7 @@ import android.content.Context
 // SingletonHolder is based on 'lazy' from the Kotlin standard library
 
 
-@Database(entities = [Camera::class, File::class], version = 1, exportSchema = false)
+@Database(entities = [Camera::class, DBFile::class], version = 1, exportSchema = false)
 abstract class DB : RoomDatabase() {
     abstract fun cameraDao(): CameraDao
     abstract fun fileDao(): FileDao

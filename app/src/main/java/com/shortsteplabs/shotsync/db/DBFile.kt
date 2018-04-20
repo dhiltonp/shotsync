@@ -21,7 +21,7 @@ import android.arch.persistence.room.*
 
 
 @Entity(indices = [(Index(value = ["baseName", "extension", "bytes"], unique = true))])
-class File {
+class DBFile {
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0
 
@@ -43,18 +43,18 @@ class File {
 
 @Dao
 interface FileDao {
-    @get:Query("SELECT * FROM file")
-    val all: List<File>
+    @get:Query("SELECT * FROM dbFile")
+    val all: List<DBFile>
 
-    @Query("SELECT * FROM file WHERE time >= :oldest AND NOT downloaded ORDER BY time, baseName")
-    fun toDownload(oldest: Long): List<File>
+    @Query("SELECT * FROM dbFile WHERE time >= :oldest AND NOT downloaded ORDER BY time, baseName")
+    fun toDownload(oldest: Long): List<DBFile>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertNew(vararg files: File)
+    fun insertNew(vararg files: DBFile)
 
     @Update
-    fun update(file: File)
+    fun update(file: DBFile)
 
     @Delete
-    fun delete(file: File)
+    fun delete(file: DBFile)
 }
