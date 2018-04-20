@@ -14,7 +14,10 @@ import android.view.MenuItem
 import android.view.View
 import com.shortsteplabs.shotsync.R
 import com.shortsteplabs.shotsync.camera.Discover
+import com.shortsteplabs.shotsync.db.DB
+import com.shortsteplabs.shotsync.db.getCamera
 import com.shortsteplabs.shotsync.sync.SyncService.Companion.startSync
+import kotlinx.android.synthetic.main.content_main.*
 
 /**
  * Copyright (C) 2018  David Hilton <david.hilton.p@gmail.com>
@@ -45,6 +48,22 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         firstRun()
+        enableStartSync()
+//        enableDeleteDownloaded()
+    }
+
+    fun enableStartSync() {
+        class enable: AsyncTask<Context, Void, Boolean>() {
+            override fun doInBackground(vararg context: Context?): Boolean {
+                return getCamera(DB.getInstance(context.first()!!)).ssid != ""
+            }
+            override fun onPostExecute(camera: Boolean) {
+                if (camera) {
+                    startSync.isEnabled = true
+                }
+            }
+        }
+        enable().execute(this)
     }
 
     fun firstRun() {
@@ -54,6 +73,10 @@ class MainActivity : AppCompatActivity() {
 
         if (lastVersion != thisVersion) {
             Permissions(this).firstRun()
+            with(pref.edit()) {
+                putInt(getString(R.string.version_code), thisVersion)
+                commit()
+            }
         }
     }
 
@@ -76,13 +99,15 @@ class MainActivity : AppCompatActivity() {
         startSync(this)
         val notification = Snackbar.make(
                 this.findViewById(android.R.id.content),
-                "Sync started, watch notifications for updates!",
+                "Sync started!",
                 Snackbar.LENGTH_LONG)
         notification.show()
     }
 
     fun pairCamera(view: View) {
         val activity = this
+
+        Permissions(this).requestFilePermissions()
 
         val builder = AlertDialog.Builder(this)
         builder.setMessage("Please turn on your camera's wifi, connect to it, then continue.")   // mom ignored this popup, just clicking "continue"
@@ -96,18 +121,13 @@ class MainActivity : AppCompatActivity() {
                     super.onPostExecute(result)
                     if (result != null) {
                         if (result.success) {
-                            val notification = Snackbar.make(
-                                    activity.findViewById(android.R.id.content),
-                                    result.text,
-                                    Snackbar.LENGTH_LONG)
-                            notification.show()
-                        } else {
-                            val notification = Snackbar.make(
-                                    activity.findViewById(android.R.id.content),
-                                    result.text,
-                                    Snackbar.LENGTH_INDEFINITE)
-                            notification.show()
+                            enableStartSync()
                         }
+                        val notification = Snackbar.make(
+                                activity.findViewById(android.R.id.content),
+                                result.text,
+                                Snackbar.LENGTH_INDEFINITE)
+                        notification.show()
                     }
                 }
             }
