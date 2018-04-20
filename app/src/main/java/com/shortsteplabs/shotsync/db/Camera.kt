@@ -35,6 +35,7 @@ class Camera {
     var lastTimeZoneOffset = 0L
 
     var defaultSyncMode = "Sync then Off"
+    var autoSync = true
     var syncFiles = true
     var syncGPS = true
     var syncTime = true

@@ -16,6 +16,11 @@
             android:title="@string/sync_mode_title" />
         <CheckBoxPreference
             android:defaultValue="true"
+            android:key="@string/auto_sync_key"
+            android:title="@string/auto_sync_title"
+            android:summary="@string/auto_sync_summary" />
+        <CheckBoxPreference
+            android:defaultValue="true"
             android:key="@string/sync_files_key"
             android:title="@string/sync_files_title" />
         <CheckBoxPreference

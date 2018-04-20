@@ -42,17 +42,20 @@ class SyncService : ManualIntentService("SyncService") {
     override fun onHandleIntent(intent: Intent?) {
         if (intent != null) {
             val action = intent.action
-            if (ACTION_START_SYNC == action) {
-                handleStartSync()
-            } else if (ACTION_STOP_SYNC == action) {
+            when {
+                ACTION_START_SYNC == action -> handleStartSync(false)
+                ACTION_START_AUTO_SYNC == action -> handleStartSync(true)
+                ACTION_STOP_SYNC == action -> {
 
-            } else if (ACTION_CANCEL_SYNC == action) {
+                }
+                ACTION_CANCEL_SYNC == action -> {
 
+                }
             }
         }
     }
 
-    fun handleStartSync() {
+    fun handleStartSync(auto: Boolean) {
         val (ssid, network) = try {
             getWifiConnection(this)
         } catch (e: NoWifi) {
@@ -62,6 +65,7 @@ class SyncService : ManualIntentService("SyncService") {
         if (syncer == null) {
             val camera = DB.getInstance(this).cameraDao().findBySSID(ssid)
             if (camera != null) {
+                if (auto && ! camera.autoSync) return
                 bindNetwork(this, network)
                 syncer = Syncer(this, camera)
                 syncer!!.startSync()
@@ -72,6 +76,7 @@ class SyncService : ManualIntentService("SyncService") {
     companion object {
         private val TAG = "SyncService"
         private val ACTION_START_SYNC = "com.shortsteplabs.shotsync.action.START_SYNC"
+        private val ACTION_START_AUTO_SYNC = "com.shortsteplabs.shotsync.action.START_SYNC"
         private val ACTION_STOP_SYNC = "com.shortsteplabs.shotsync.action.STOP_SYNC"
         private val ACTION_CANCEL_SYNC = "com.shortsteplabs.shotsync.action.CANCEL_SYNC"
         private val ACTION_DISCOVER_CAMERA = "com.shortsteplabs.shotsync.action.ACTION_DISCOVER_CAMERA"
@@ -79,6 +84,12 @@ class SyncService : ManualIntentService("SyncService") {
         fun startSync(context: Context) {
             val intent = Intent(context, SyncService::class.java)
             intent.action = ACTION_START_SYNC
+            context.startService(intent)
+        }
+
+        fun startAutoSync(context: Context) {
+            val intent = Intent(context, SyncService::class.java)
+            intent.action = ACTION_START_AUTO_SYNC
             context.startService(intent)
         }
 
