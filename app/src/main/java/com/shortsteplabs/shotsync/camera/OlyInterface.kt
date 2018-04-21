@@ -17,7 +17,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 package com.shortsteplabs.shotsync.camera
 
-import android.os.SystemClock.sleep
 import android.util.Log
 import android.util.Xml
 import com.shortsteplabs.shotsync.HttpHelper
@@ -111,26 +110,24 @@ object OlyInterface {
         Log.d(TAG, "shutdown: $response")
     }
 
-    /**
-     * attempt to connect to camera
-     * raise NoConnection on failure
-     */
-    fun connect(client: HttpHelper, retries: Int=5) {
-        Log.d(TAG, "connect")
-        for (i in 1..retries) {
-            try {
-                getCamInfo(client)
-                break
-            } catch (e: HttpHelper.NoConnection) {
-                Log.d(TAG, e.toString())
-                if (i < retries) {
-                    sleep(2000)
-                    continue
-                } else {
-                    throw e
-                }
-            }
+    fun setTime(client: HttpHelper, date: Date, timeZone: TimeZone): Boolean {
+        Log.d(TAG, "set time")
+
+        val utc = TimeZone.getTimeZone("UTC")
+        val timeFormat = SimpleDateFormat("yyyyMMdd'T'HHmmss")
+        timeFormat.timeZone = utc
+        val timeStr = timeFormat.format(date.time)
+
+        val zoneFormat = SimpleDateFormat("Z")
+        zoneFormat.timeZone = timeZone
+        val tzStr = zoneFormat.format(date)
+        val response = client.get("http://192.168.0.10/set_utctimediff.cgi?utctime=$timeStr&diff=$tzStr")
+
+        if (response != "") {
+            return true
         }
+
+        return false
     }
 
     fun getCamInfo(client: HttpHelper): String {

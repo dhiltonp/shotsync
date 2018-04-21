@@ -69,7 +69,7 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         // request new geolocation
         while (true) {
             discoverFiles() // todo: make incremental, reload if camera sync range changes
-//            updateTime()
+            updateTime()
 //            enableShooting?() // interactive
 //            geotagFiles() // (also update file.bytes when done)
             downloadFiles()
@@ -80,6 +80,16 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         }
     }
 
+    private fun updateTime() {
+        notification.status("Syncing with ${camera.model}", "Updating clock")
+
+        val date = Date()
+        val tz = TimeZone.getDefault()
+        if (OlyInterface.setTime(client, date, tz)) {
+            camera.lastTimeZoneOffset = tz.getOffset(date.time).toLong()
+            DB.getInstance(syncService).cameraDao().update(camera)
+        }
+    }
 
     private fun discoverFiles() {
         notification.status("Syncing with ${camera.model}", "Scanning available files")
