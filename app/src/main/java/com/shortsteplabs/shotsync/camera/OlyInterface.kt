@@ -30,8 +30,7 @@ import java.util.*
 
 
 // https://en.wikipedia.org/wiki/Design_rule_for_Camera_File_system - defines clustering?
-class OlyEntry constructor(entry: String, tzOffset: Long) : Comparable<OlyEntry> {
-    val entry = entry
+class OlyEntry constructor(val entry: String, tzOffset: Long) : Comparable<OlyEntry> {
     val split = entry.split(',')
     val dirname= split[0]
     val filename = split[1]

@@ -29,7 +29,7 @@ import com.shortsteplabs.shotsync.sync.SyncService
 class ConnectReceiver : BroadcastReceiver() {
     private val TAG = "ConnectReceiver"
 
-    private fun isValidAction(intent: Intent) = when (intent.action) {
+    private fun isConnected(intent: Intent) = when (intent.action) {
         "android.net.wifi.STATE_CHANGE" -> {
             val netInfo = intent.getParcelableExtra<NetworkInfo>(WifiManager.EXTRA_NETWORK_INFO)
             netInfo.isConnected
@@ -40,7 +40,7 @@ class ConnectReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (!isValidAction(intent)) return
+        if (!isConnected(intent)) return
         Log.d(TAG, intent.action)
 
         SyncService.startSync(context)

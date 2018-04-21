@@ -39,6 +39,7 @@
         android:id="@+id/deleteDownloaded"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:onClick="deleteDownloaded"
         android:text="@string/delete_downloaded"
         android:textSize="18sp"
         android:enabled="false"

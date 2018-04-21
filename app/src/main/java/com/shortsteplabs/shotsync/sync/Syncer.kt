@@ -181,67 +181,6 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         }
     }
 
-    private fun downloadLoop(client: HttpHelper) {
-//        val camera = OlyInterface.getCamInfo(client)
-//        notification.status("Starting Download", "Connected to ${camera.model}, discovering new files.")
-
-        var toDownload = 0
-        var downloaded = 0
-        var currentFilename = ""
-        try {
-            // which resources to downloadFiles?
-            val newResources = mutableListOf<OlyEntry>()
-            val now = Date()
-            for (resource in OlyInterface.listFiles(client, camera.lastTimeZoneOffset)) {
-//                if (resource.year == 1900 + now.year && resource.month == now.month + 1 && resource.day == now.date &&
-//                        resource.extension == "ORF") {
-                    newResources.add(resource)
-//                }
-            }
-
-            toDownload += newResources.size
-            for (resource in newResources) {
-
-                if (hasWritePermission()) {
-                    downloaded++
-                    notification.status("Syncing with ${camera.model}", "$downloaded/$toDownload new: ${resource.filename}")
-
-                    if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
-                        notification.clearable("Error", "Storage permissions not granted")
-                    } else if (resource.bytes > bytesAvailable()) {
-                        notification.clearable("Error", "${resource.filename} cannot fit on storage")
-                    } else if (resource.bytes > 4294967295) { // 4GB, 2^32-1. TODO: detect actual limit
-                        notification.clearable("Error", "${resource.filename} exceeds 4GB limit")
-                    } else {
-                        // downloadFiles file to tmp
-                        var partial: File
-                        for (i in 0 until 3) {
-                            partial = getPublicFile(resource.filename + ".partial")
-                            OlyInterface.download(client, resource, partial)
-                            if (partial.length() != resource.bytes) {
-                                Log.e(TAG, "${resource.filename}: downloaded vs. expected bytes don't match")
-                            } else {
-                                val file = moveDownload(resource, partial)
-                                registerFile(resource, file)
-                                break
-                            }
-                        }
-
-                    }
-                }
-            }
-            notification.clearable("Syncing with ${camera.model}", "$downloaded downloaded, shutting down.")
-
-            OlyInterface.shutdown(client)
-            //stopSelf()
-        } catch (e: HttpHelper.NoConnection) {
-            notification.clearable("Sync with ${camera.model} interrupted", "$downloaded/$toDownload downloaded")
-        } finally {
-            //stopSelf()
-        }
-    }
-
-
     private fun registerFile(resource: OlyEntry, file: File) {
         val values = ContentValues()
         values.put(MediaStore.MediaColumns.DATA, file.path)

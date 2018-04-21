@@ -5,8 +5,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
-import android.preference.PreferenceManager
-import android.support.design.widget.Snackbar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
@@ -17,6 +15,9 @@ import com.shortsteplabs.shotsync.camera.Discover
 import com.shortsteplabs.shotsync.db.DB
 import com.shortsteplabs.shotsync.db.getCamera
 import com.shortsteplabs.shotsync.sync.SyncService.Companion.startSync
+import com.shortsteplabs.shotsync.ui.Permissions.Companion.WRITE_EXTERNAL
+import com.shortsteplabs.shotsync.util.RecursiveDelete
+import com.shortsteplabs.shotsync.util.filesExist
 import kotlinx.android.synthetic.main.content_main.*
 
 /**
@@ -47,15 +48,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        firstRun()
         enableStartSync()
-//        enableDeleteDownloaded()
+        enableDeleteDownloaded()
     }
 
     fun enableStartSync() {
         class enable: AsyncTask<Context, Void, Boolean>() {
-            override fun doInBackground(vararg context: Context?): Boolean {
-                return getCamera(DB.getInstance(context.first()!!)).ssid != ""
+            override fun doInBackground(vararg params: Context?): Boolean {
+                val context = params.first()!!
+                val camera = getCamera(DB.getInstance(context))
+                return camera.ssid != ""
             }
             override fun onPostExecute(camera: Boolean) {
                 if (camera) {
@@ -66,18 +68,8 @@ class MainActivity : AppCompatActivity() {
         enable().execute(this)
     }
 
-    fun firstRun() {
-        val pref = PreferenceManager.getDefaultSharedPreferences(this)
-        val lastVersion = pref.getInt(this.getString(R.string.version_code), -1)
-        val thisVersion = this.packageManager.getPackageInfo(this.packageName, 0).versionCode
-
-        if (lastVersion != thisVersion) {
-            Permissions(this).firstRun()
-            with(pref.edit()) {
-                putInt(getString(R.string.version_code), thisVersion)
-                commit()
-            }
-        }
+    fun enableDeleteDownloaded() {
+        deleteDownloaded.isEnabled = filesExist(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -95,19 +87,11 @@ class MainActivity : AppCompatActivity() {
         else ->super.onOptionsItemSelected(item)
     }
 
-    fun startSync(view: View) {
-        startSync(this)
-        val notification = Snackbar.make(
-                this.findViewById(android.R.id.content),
-                "Sync started!",
-                Snackbar.LENGTH_LONG)
-        notification.show()
-    }
-
     fun pairCamera(view: View) {
         val activity = this
 
         Permissions(this).requestFilePermissions()
+        Permissions(this).requestIgnoreBattery()
 
         val builder = AlertDialog.Builder(this)
         builder.setMessage("Please turn on your camera's wifi, connect to it, then continue.")   // mom ignored this popup, just clicking "continue"
@@ -123,11 +107,7 @@ class MainActivity : AppCompatActivity() {
                         if (result.success) {
                             enableStartSync()
                         }
-                        val notification = Snackbar.make(
-                                activity.findViewById(android.R.id.content),
-                                result.text,
-                                Snackbar.LENGTH_INDEFINITE)
-                        notification.show()
+                        notifyBottom(activity, result.text, 6)
                     }
                 }
             }
@@ -135,5 +115,26 @@ class MainActivity : AppCompatActivity() {
         })
         builder.setNegativeButton("Cancel", fun(_: DialogInterface?, _: Int) {})
         builder.create().show()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == WRITE_EXTERNAL) {
+            Permissions(this).requestFilePermissionsCallback(permissions, grantResults)
+        }
+    }
+
+    fun startSync(view: View) {
+        startSync(this)
+        notifyBottom(this, "Sync started", 3)
+    }
+
+    fun deleteDownloaded(view: View) {
+        class delete: RecursiveDelete() {
+            override fun onPostExecute(result: Long?) {
+                enableDeleteDownloaded()
+            }
+        }
+        delete().execute(this)
     }
 }
