@@ -86,12 +86,12 @@ object OlyInterface {
      */
     fun listFiles(client: HttpHelper, tzOffset: Long=0): List<OlyEntry> {
         Log.d(TAG, "listFiles")
-        val dirs = listDir(client, "/DCIM", tzOffset)
+        val dirs = listDirWeb(client, "/DCIM", tzOffset)
 
         val resources = mutableListOf<OlyEntry>()
 
         for (dir in dirs) {
-            val result = listDir(client, dir.path, tzOffset)
+            val result = listDirWeb(client, dir.path, tzOffset)
             resources.addAll(result)
         }
 
@@ -110,8 +110,14 @@ object OlyInterface {
         Log.d(TAG, "shutdown: $response")
     }
 
+    fun enableShooting(client: HttpHelper) {
+        Log.d(TAG, "enableShooting")
+        val response = client.get("http://192.168.0.10/switch_cammode.cgi?mode=shutter")
+        val i = 0
+    }
+
     fun setTime(client: HttpHelper, date: Date, timeZone: TimeZone): Boolean {
-        Log.d(TAG, "set time")
+        Log.d(TAG, "setTime")
 
         val utc = TimeZone.getTimeZone("UTC")
         val timeFormat = SimpleDateFormat("yyyyMMdd'T'HHmmss")
@@ -176,5 +182,20 @@ object OlyInterface {
         val entries = split.slice(1 until split.size).map { line -> OlyEntry(line, tzOffset) }
         Log.d(TAG, "found ${entries.size} entries")
         return entries
+    }
+
+    private fun listDirWeb(client: HttpHelper, path: String, tzOffset: Long): List<OlyEntry> {
+        Log.d(TAG, "listDir")
+        val r = client.get("http://192.168.0.10/$path")
+        Log.d(TAG, "converting to file entries")
+
+        val keepers = mutableListOf<OlyEntry>()
+        for (l in r.split('\n')) {
+            if (l.startsWith("wlansd[")) {
+                val entry = l.split('"')[1]
+                keepers.add(OlyEntry(entry, tzOffset))
+            }
+        }
+        return keepers
     }
 }

@@ -41,7 +41,6 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
     val TAG = "Syncer"
     val notification = SyncNotification(syncService)
     val client = HttpHelper()
-    var downloaded = 0
 
     var downloading = false
 
@@ -67,17 +66,39 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
 
     private fun syncLoop() {
         // request new geolocation
-        while (true) {
-            discoverFiles() // todo: make incremental, reload if camera sync range changes
-            updateTime()
-//            enableShooting?() // interactive
-//            geotagFiles() // (also update file.bytes when done)
-            downloadFiles()
-            if (camera.defaultSyncMode == syncService.getString(R.string.sync_then_off_value)) {
-                OlyInterface.shutdown(client)
-                break
+        discoverFiles() // todo: make incremental, reload if camera sync range changes
+        updateTime()
+        // geotagFiles() // (also update file.bytes when done)
+        if (enableShooting()) {
+            while (true) {
+                downloadFiles()
+                Thread.sleep(10000)
+                discoverFiles() // todo: make incremental, reload if camera sync range changes
             }
+        } else {
+            downloadFiles()
+            OlyInterface.shutdown(client)
         }
+//        while (true) {
+//            discoverFiles() // todo: make incremental, reload if camera sync range changes
+//            updateTime()
+//            enableShooting()
+//            geotagFiles() // (also update file.bytes when done)
+//            downloadFiles()
+//            if (camera.defaultSyncMode == syncService.getString(R.string.sync_then_off_value)) {
+//                OlyInterface.shutdown(client)
+//                break
+//            }
+//        }
+    }
+
+    private fun enableShooting(): Boolean {
+        if (camera.defaultSyncMode == syncService.getString(R.string.sync_while_shooting_value)) {
+            notification.status("Syncing with ${camera.model}", "Updating clock")
+            OlyInterface.enableShooting(client)
+            return true
+        }
+        return false
     }
 
     private fun updateTime() {
@@ -123,6 +144,7 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
             return
         }
 
+        var downloaded = 0
         for (file in OlyInterface.listFiles(client)) {
             // also, cooperatively check for 'cancel' or 'stop'
             if (file.filename !in dbFiles) continue
