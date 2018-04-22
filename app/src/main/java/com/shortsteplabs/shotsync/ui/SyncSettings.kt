@@ -84,7 +84,15 @@ class CameraSettingsFragment: PreferenceFragment() {
         if (camera == null) return
 
         val camera = camera!!
-        camera.defaultSyncMode = prefs.getString(getString(R.string.sync_mode_key), getString(R.string.sync_then_off_value))
+
+        if (prefs.getString(getString(R.string.sync_mode_key), "") == getString(R.string.sync_then_off_value)) {
+            camera.autoOff = true
+            camera.liveShooting = false
+        } else {
+            camera.autoOff = false
+            camera.liveShooting = true
+        }
+
         camera.autoSync = prefs.getBoolean(getString(R.string.auto_sync_key), true)
         camera.syncFiles = prefs.getBoolean(getString(R.string.sync_files_key), true)
         camera.syncGPS = prefs.getBoolean(getString(R.string.sync_gps_key), true)

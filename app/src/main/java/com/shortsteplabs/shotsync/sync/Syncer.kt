@@ -10,7 +10,6 @@ import android.support.v4.app.ActivityCompat
 import android.util.Log
 import android.webkit.MimeTypeMap
 import com.shortsteplabs.shotsync.HttpHelper
-import com.shortsteplabs.shotsync.R
 import com.shortsteplabs.shotsync.camera.OlyEntry
 import com.shortsteplabs.shotsync.camera.OlyInterface
 import com.shortsteplabs.shotsync.db.Camera
@@ -69,32 +68,26 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         discoverFiles() // todo: make incremental, reload if camera sync range changes
         updateTime()
         // geotagFiles() // (also update file.bytes when done)
-        if (enableShooting()) {
-            while (true) {
-                downloadFiles()
-                Thread.sleep(10000)
-                discoverFiles() // todo: make incremental, reload if camera sync range changes
-            }
-        } else {
+        enableShooting()
+        while (true) {
             downloadFiles()
-            OlyInterface.shutdown(client)
+            discoverFiles() // todo: make incremental, reload if camera sync range changes
+            shutdownCamera()
         }
-//        while (true) {
-//            discoverFiles() // todo: make incremental, reload if camera sync range changes
-//            updateTime()
-//            enableShooting()
-//            geotagFiles() // (also update file.bytes when done)
-//            downloadFiles()
-//            if (camera.defaultSyncMode == syncService.getString(R.string.sync_then_off_value)) {
-//                OlyInterface.shutdown(client)
-//                break
-//            }
-//        }
+    }
+
+    private fun shutdownCamera() {
+        if (camera.autoOff) {
+            OlyInterface.shutdown(client)
+            // todo: stop syncing
+        } else {
+            Thread.sleep(10000)
+        }
     }
 
     private fun enableShooting(): Boolean {
-        if (camera.defaultSyncMode == syncService.getString(R.string.sync_while_shooting_value)) {
-            notification.status("Syncing with ${camera.model}", "Updating clock")
+        if (camera.liveShooting == true) {
+            notification.status("Syncing with ${camera.model}", "Enabling shooting")
             OlyInterface.enableShooting(client)
             return true
         }

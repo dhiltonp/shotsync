@@ -34,7 +34,8 @@ class Camera {
     // To convert from local time to UTC, *subtract* the offset.
     var lastTimeZoneOffset = 0L
 
-    var defaultSyncMode = "Sync then Off"
+    var autoOff = true
+    var liveShooting = false
     var autoSync = true
     var syncFiles = true
     var syncGPS = true
