@@ -42,6 +42,7 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
     val client = HttpHelper()
 
     var running = true
+    var camFiles = emptyList<OlyEntry>()
 
     fun stop() {
         notification.clearStatus()
@@ -66,14 +67,14 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
 
     private fun syncLoop() {
         // request new geolocation
-        discoverFiles() // todo: make incremental, reload if camera sync range changes
+        discoverFiles()
         updateTime()
         // geotagFiles() // (also update file.bytes when done)
         enableShooting()
         while (running) {
             downloadFiles()
-            discoverFiles() // todo: make incremental, reload if camera sync range changes
             shutdownCamera()
+            discoverFiles()
         }
     }
 
@@ -106,18 +107,20 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         }
     }
 
+    // todo: make incremental, reload if camera sync range changes
     private fun discoverFiles() {
         notification.status("Syncing with ${camera.model}", "Scanning available files")
-        val files = mutableListOf<DBFile>()
-        for (file in OlyInterface.listFiles(client, camera.lastTimeZoneOffset)) {
-            val f = DBFile()
-            f.bytes = file.bytes
-            f.extension = file.extension
-            f.time = file.time
-            f.baseName = file.baseName
-            files.add(f)
+        val dbFiles = mutableListOf<DBFile>()
+        camFiles = OlyInterface.listFiles(client, camera.lastTimeZoneOffset)
+        for (camFile in camFiles) {
+            val dbFile = DBFile()
+            dbFile.bytes = camFile.bytes
+            dbFile.extension = camFile.extension
+            dbFile.time = camFile.time
+            dbFile.baseName = camFile.baseName
+            dbFiles.add(dbFile)
         }
-        DB.getInstance(syncService).fileDao().insertNew(*files.toTypedArray())
+        DB.getInstance(syncService).fileDao().insertNew(*dbFiles.toTypedArray())
     }
 
     private fun downloadFiles() {
@@ -139,14 +142,14 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         }
 
         var downloaded = 0
-        for (file in OlyInterface.listFiles(client)) {
+        for (camFile in camFiles) {
             // also, cooperatively check for 'cancel' or 'stop'
-            if (file.filename !in dbFiles) continue
-            if (!canWrite(file.bytes)) break
-            notification.status("Syncing with ${camera.model}", "Downloading ${downloaded+1}/${dbFiles.size} new: ${file.filename}")
-            downloadFile(file)
-            dbFiles[file.filename]!!.downloaded = true
-            DB.getInstance(syncService).fileDao().update(dbFiles[file.filename]!!)
+            if (camFile.filename !in dbFiles) continue
+            if (!canWrite(camFile.bytes)) break
+            notification.status("Syncing with ${camera.model}", "Downloading ${downloaded+1}/${dbFiles.size} new: ${camFile.filename}")
+            downloadFile(camFile)
+            dbFiles[camFile.filename]!!.downloaded = true
+            DB.getInstance(syncService).fileDao().update(dbFiles[camFile.filename]!!)
             downloaded++
         }
         notification.clearable("Syncing with ${camera.model}", "$downloaded new files downloaded!")
