@@ -41,11 +41,12 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
     val notification = SyncNotification(syncService)
     val client = HttpHelper()
 
-    var downloading = false
+    var running = true
 
-    fun cleanup() {
+    fun stop() {
         notification.clearStatus()
         syncService.stopSelf()
+        running = false
     }
 
     fun startSync() {
@@ -60,7 +61,7 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         } catch (e: HttpHelper.NoConnection) {
             notification.clearable("Sync stopped", "Unable to connect")
         }
-        cleanup()
+        stop()
     }
 
     private fun syncLoop() {
@@ -69,7 +70,7 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         updateTime()
         // geotagFiles() // (also update file.bytes when done)
         enableShooting()
-        while (true) {
+        while (running) {
             downloadFiles()
             discoverFiles() // todo: make incremental, reload if camera sync range changes
             shutdownCamera()
@@ -79,7 +80,7 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
     private fun shutdownCamera() {
         if (camera.autoOff) {
             OlyInterface.shutdown(client)
-            // todo: stop syncing
+//            stop()
         } else {
             Thread.sleep(10000)
         }
