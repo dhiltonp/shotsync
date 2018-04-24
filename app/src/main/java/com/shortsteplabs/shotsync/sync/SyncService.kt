@@ -76,7 +76,7 @@ class SyncService : ManualIntentService("SyncService") {
     companion object {
         private val TAG = "SyncService"
         private val ACTION_START_SYNC = "com.shortsteplabs.shotsync.action.START_SYNC"
-        private val ACTION_START_AUTO_SYNC = "com.shortsteplabs.shotsync.action.START_SYNC"
+        private val ACTION_START_AUTO_SYNC = "com.shortsteplabs.shotsync.action.START_AUTO_SYNC"
         private val ACTION_STOP_SYNC = "com.shortsteplabs.shotsync.action.STOP_SYNC"
         private val ACTION_CANCEL_SYNC = "com.shortsteplabs.shotsync.action.CANCEL_SYNC"
         private val ACTION_DISCOVER_CAMERA = "com.shortsteplabs.shotsync.action.ACTION_DISCOVER_CAMERA"

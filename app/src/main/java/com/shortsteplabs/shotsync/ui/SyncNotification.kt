@@ -38,7 +38,7 @@ class SyncNotification(val service: ManualIntentService) {
         if (Build.VERSION.SDK_INT >= 26) {
             val notificationManager = service.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             if (notificationManager.getNotificationChannel(CHANNEL_ID) == null) {
-                val channel = NotificationChannel(CHANNEL_ID, "ShotSync Service", NotificationManager.IMPORTANCE_NONE)
+                val channel = NotificationChannel(CHANNEL_ID, "Sync Status", NotificationManager.IMPORTANCE_NONE)
                 notificationManager.createNotificationChannel(channel)
             }
         }
@@ -47,9 +47,6 @@ class SyncNotification(val service: ManualIntentService) {
     fun clearStatus() {
         val notificationManager = service.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(DOWNLOAD_NOTIFICATION_ID)
-        if (Build.VERSION.SDK_INT >= 26) {
-            notificationManager.deleteNotificationChannel(CHANNEL_ID)
-        }
     }
 
     fun clearable(title: String, text: String) {
