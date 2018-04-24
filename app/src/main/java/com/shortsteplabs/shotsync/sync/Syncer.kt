@@ -71,9 +71,10 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         updateTime()
         // geotagFiles() // (also update file.bytes when done)
         enableShooting()
-        while (running) {
+        while (true) {
             downloadFiles()
             shutdownCamera()
+            if(!running) break
             discoverFiles()
         }
     }
@@ -81,7 +82,7 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
     private fun shutdownCamera() {
         if (camera.autoOff) {
             OlyInterface.shutdown(client)
-//            stop()
+            stop()
         } else {
             Thread.sleep(10000)
         }
