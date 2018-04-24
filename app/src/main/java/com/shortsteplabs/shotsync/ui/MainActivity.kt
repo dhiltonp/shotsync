@@ -18,6 +18,7 @@ import com.shortsteplabs.shotsync.sync.SyncService.Companion.startSync
 import com.shortsteplabs.shotsync.ui.Permissions.Companion.WRITE_EXTERNAL
 import com.shortsteplabs.shotsync.util.RecursiveDelete
 import com.shortsteplabs.shotsync.util.filesExist
+import com.shortsteplabs.shotsync.wificonnected.WifiListenerService
 import kotlinx.android.synthetic.main.content_main.*
 
 /**
@@ -50,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         enableStartSync()
         enableDeleteDownloaded()
+        startService(Intent(this, WifiListenerService::class.java))
     }
 
     fun enableStartSync() {

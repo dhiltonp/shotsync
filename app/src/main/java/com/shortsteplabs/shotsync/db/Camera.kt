@@ -81,3 +81,12 @@ fun getCamera(db: DB, id: Int=1): Camera {
     }
     return camera!!
 }
+
+fun autoSyncEnabled(db: DB): Boolean {
+    for (camera in db.cameraDao().all) {
+        if (camera.autoSync) {
+            return true
+        }
+    }
+    return false
+}

@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.shortsteplabs.shotsync
+package com.shortsteplabs.shotsync.wificonnected
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -25,6 +25,9 @@ import android.net.wifi.WifiManager
 import android.util.Log
 import com.shortsteplabs.shotsync.sync.SyncService
 
+
+// Wifi notifications for Android < 26/8.0/Oreo
+// (26+ doesn't broadcast wifi.STATE_CHANGE)
 
 class ConnectReceiver : BroadcastReceiver() {
     private val TAG = "ConnectReceiver"
@@ -42,7 +45,6 @@ class ConnectReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (!isConnected(intent)) return
         Log.d(TAG, intent.action)
-
-        SyncService.startSync(context)
+        SyncService.startAutoSync(context)
     }
 }

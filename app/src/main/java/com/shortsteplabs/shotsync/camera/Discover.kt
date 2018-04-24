@@ -31,7 +31,7 @@ class Discover {
 
     data class DiscoverResult(val success: Boolean, val text: String)
     fun discover(context: Context): DiscoverResult {
-        // detect camera on current wifi, add camera to DB, enable buttons/change text?
+        // detect camera on current wifi, add camera to DB
         val (ssid, network) = try {
             getWifiConnection(context)
         } catch (e: NoWifi) {
