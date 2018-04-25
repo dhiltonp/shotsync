@@ -101,7 +101,7 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         notification.status("Syncing with ${camera.model}", "Updating clock")
 
         val date = Date()
-        val tz = TimeZone.getDefault()
+        val tz = if (camera.maintainUTC) TimeZone.getTimeZone("UTC") else TimeZone.getDefault()
         if (OlyInterface.setTime(client, date, tz)) {
             camera.lastTimeZoneOffset = tz.getOffset(date.time).toLong()
             DB.getInstance(syncService).cameraDao().update(camera)
