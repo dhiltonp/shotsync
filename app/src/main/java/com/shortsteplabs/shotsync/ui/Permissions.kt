@@ -10,12 +10,10 @@ import android.content.pm.PackageManager
 import android.os.AsyncTask
 import android.os.Build
 import android.os.PowerManager
-import android.preference.PreferenceManager
 import android.provider.Settings
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.FragmentActivity
 import android.support.v7.app.AlertDialog
-import com.shortsteplabs.shotsync.R
 import com.shortsteplabs.shotsync.db.DB
 import com.shortsteplabs.shotsync.db.getCamera
 
@@ -63,7 +61,14 @@ class Permissions(private val activity: Activity): FragmentActivity() {
         class dbPermissions: AsyncTask<Void, Void, Void?>() {
             override fun doInBackground(vararg params: Void?): Void? {
                 val camera = getCamera(DB.getInstance(activity))
-                camera.syncFiles = granted
+                if (granted) {
+                    camera.syncFiles = true
+                } else {
+                    camera.syncFiles = false
+                    camera.syncJPG = false
+                    camera.syncRAW = false
+                    camera.syncVID = false
+                }
                 DB.getInstance(activity).cameraDao().update(camera)
                 return null
             }
@@ -84,22 +89,18 @@ class Permissions(private val activity: Activity): FragmentActivity() {
                         activity.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
                     })
                     builder.setNegativeButton("Cancel", fun(_: DialogInterface?, _: Int) {
-                        val camera = getCamera(DB.getInstance(activity), 1)
-                        camera.autoSync = false
+                        class noAutoSync: AsyncTask<Void, Void, Void?>() {
+                            override fun doInBackground(vararg params: Void?): Void? {
+                                val camera = getCamera(DB.getInstance(activity))
+                                camera.autoSync = false
+                                DB.getInstance(activity).cameraDao().update(camera)
+                                return null
+                            }
+                        }
+                        noAutoSync().execute()
                     })
                     builder.show()
                 }
-            }
-        }
-    }
-
-    fun updateSyncDownloadSetting() {
-        val writePermission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        if (writePermission != PackageManager.PERMISSION_GRANTED) {
-            val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
-            with (prefs.edit()) {
-                putBoolean(activity.getString(R.string.sync_files_key), false)
-                commit()
             }
         }
     }

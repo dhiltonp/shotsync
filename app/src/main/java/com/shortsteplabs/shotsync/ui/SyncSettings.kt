@@ -38,16 +38,20 @@ class CameraSettingsFragment: PreferenceFragment() {
         when (key) {
             getString(R.string.sync_mode_key) -> updateListSummary(key)
             getString(R.string.sync_period_key) -> updateListSummary(key)
-            getString(R.string.sync_files_key) -> Permissions(activity).requestFilePermissions()
-         }
+            getString(R.string.auto_sync_key) -> if (autoSync()) Permissions(activity).requestIgnoreBattery()
+            getString(R.string.sync_jpg_key),
+            getString(R.string.sync_raw_key),
+            getString(R.string.sync_vid_key) -> if (syncFiles()) Permissions(activity).requestFilePermissions()
+        // todo: trigger ui refresh when camera entry in db is updated...
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Permissions(activity).updateSyncDownloadSetting()
         addPreferencesFromResource(R.xml.sync_settings)
-    }
 
+    }
+    
     override fun onStart() {
         super.onStart()
         val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
@@ -78,6 +82,19 @@ class CameraSettingsFragment: PreferenceFragment() {
         updateCamera()
     }
 
+    private fun autoSync(): Boolean {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
+        return prefs.getBoolean(getString(R.string.auto_sync_key), true)
+    }
+
+    private fun syncFiles(): Boolean {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
+        val syncJPG = prefs.getBoolean(getString(R.string.sync_jpg_key), true)
+        val syncRAW = prefs.getBoolean(getString(R.string.sync_raw_key), false)
+        val syncVID = prefs.getBoolean(getString(R.string.sync_vid_key), false)
+        return syncJPG || syncRAW || syncVID
+    }
+
     private fun updateCamera() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
 
@@ -94,15 +111,15 @@ class CameraSettingsFragment: PreferenceFragment() {
         }
 
         camera.autoSync = prefs.getBoolean(getString(R.string.auto_sync_key), true)
-        camera.syncFiles = prefs.getBoolean(getString(R.string.sync_files_key), true)
-        camera.syncGPS = prefs.getBoolean(getString(R.string.sync_gps_key), true)
-        camera.syncTime = prefs.getBoolean(getString(R.string.sync_files_key), true)
 
         camera.syncPeriod = prefs.getString(getString(R.string.sync_period_key), "86400000").toLong()
         camera.syncJPG = prefs.getBoolean(getString(R.string.sync_jpg_key), true)
         camera.syncRAW = prefs.getBoolean(getString(R.string.sync_raw_key), false)
         camera.syncVID = prefs.getBoolean(getString(R.string.sync_vid_key), false)
+        camera.syncFiles = syncFiles()
 
+        camera.syncGPS = prefs.getBoolean(getString(R.string.sync_gps_key), true)
+        camera.syncTime = true
         camera.maintainUTC = prefs.getBoolean(getString(R.string.maintain_utc_key), false)
 
         class save: AsyncTask<Context, Void, Camera>() {

@@ -19,24 +19,10 @@
             android:key="@string/auto_sync_key"
             android:title="@string/auto_sync_title"
             android:summary="@string/auto_sync_summary" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="@string/sync_files_key"
-            android:title="@string/sync_files_title" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="@string/sync_gps_key"
-            android:title="@string/sync_gps_title" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="@string/sync_time_key"
-            android:summary="@string/sync_time_warning"
-            android:title="@string/sync_time_title" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="@string/category_files_key"
-        android:title="@string/category_files_title"
-        android:dependency="@string/sync_files_key">
+        android:title="@string/category_files_title">
         <ListPreference
             android:defaultValue="86400000"
             android:entries="@array/sync_period_titles"
@@ -58,13 +44,20 @@
             android:title="Video" />
     </PreferenceCategory>
     <PreferenceCategory
-        android:key="@string/category_time_key"
-        android:title="@string/category_time_title"
-        android:dependency="@string/sync_time_key">
+        android:key="@string/category_gps_key"
+        android:title="@string/category_gps_title">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/sync_gps_key"
+            android:title="@string/sync_gps_title" />
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="@string/maintain_utc_key"
             android:summary="@string/maintain_utc_warning"
             android:title="@string/maintain_utc_title" />
+    </PreferenceCategory>
+    <PreferenceCategory>
+        android:key="category_gps"
+        android:title="GPS"
     </PreferenceCategory>
 </PreferenceScreen>

@@ -14,18 +14,6 @@
     <string name="auto_sync_key">auto_start_sync</string>
     <string name="auto_sync_title">Automatic Sync</string>
     <string name="auto_sync_summary">Start sync when WIFI connects to camera</string>
-    <string name="sync_files_key">sync_files</string>
-    <string name="sync_files_title">Files</string>
-    <string name="sync_gps_key">sync_gps</string>
-    <string name="sync_gps_title">GPS</string>
-    <string name="sync_time_key">sync_time</string>
-    <string name="sync_time_title">Time</string>
-    <string name="sync_time_warning">Helps GPS with time zones</string>
-    <string name="category_time_key">category_time</string>
-    <string name="category_time_title">Time</string>
-    <string name="maintain_utc_key">maintain_utc</string>
-    <string name="maintain_utc_title">Maintain UTC</string>
-    <string name="maintain_utc_warning">Conflicts with official app</string>
     <string name="category_files_key">category_files</string>
     <string name="category_files_title">Files</string>
     <string name="sync_period_key">sync_period</string>
@@ -34,4 +22,11 @@
     <string name="sync_raw_key">sync_raw</string>
     <string name="sync_vid_key">sync_vid</string>
     <string name="sync_vid_warning">Takes a long time, uses a lot of battery</string>
+    <string name="category_gps_key">category_gps</string>
+    <string name="category_gps_title">GPS</string>
+    <string name="sync_gps_key">sync_gps</string>
+    <string name="sync_gps_title">GPS</string>
+    <string name="maintain_utc_key">maintain_utc</string>
+    <string name="maintain_utc_title">Maintain UTC</string>
+    <string name="maintain_utc_warning">Conflicts with official app</string>
 </resources>
