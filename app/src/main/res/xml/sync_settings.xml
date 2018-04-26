@@ -56,8 +56,4 @@
             android:summary="@string/maintain_utc_warning"
             android:title="@string/maintain_utc_title" />
     </PreferenceCategory>
-    <PreferenceCategory>
-        android:key="category_gps"
-        android:title="GPS"
-    </PreferenceCategory>
 </PreferenceScreen>

@@ -25,7 +25,7 @@
     <string name="category_gps_key">category_gps</string>
     <string name="category_gps_title">GPS</string>
     <string name="sync_gps_key">sync_gps</string>
-    <string name="sync_gps_title">GPS</string>
+    <string name="sync_gps_title">Geotag Images</string>
     <string name="maintain_utc_key">maintain_utc</string>
     <string name="maintain_utc_title">Maintain UTC</string>
     <string name="maintain_utc_warning">Conflicts with official app</string>
