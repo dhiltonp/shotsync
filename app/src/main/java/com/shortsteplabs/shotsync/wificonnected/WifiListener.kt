@@ -9,17 +9,12 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.os.AsyncTask
 import android.os.Build
 import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 import com.shortsteplabs.shotsync.R
-import com.shortsteplabs.shotsync.db.DB
-import com.shortsteplabs.shotsync.db.autoSyncEnabled
-import com.shortsteplabs.shotsync.db.getCamera
 import com.shortsteplabs.shotsync.sync.SyncService.Companion.startAutoSync
-import kotlinx.android.synthetic.main.content_main.*
 
 /**
  * Copyright (C) 2018  David Hilton <david.hilton.p@gmail.com>
@@ -51,26 +46,23 @@ class WifiListenerService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (createChannel()) {
+        if (Build.VERSION.SDK_INT >= 26) {
+            createChannel()
             registerCallback()
             persistentNotification("", "Listening for new connections to cameras")
         }
         return super.onStartCommand(intent, flags, startId)
     }
 
-    fun createChannel(): Boolean {
-        if (Build.VERSION.SDK_INT >= 26) {
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            if (notificationManager.getNotificationChannel(CHANNEL_ID) == null) {
-                val channel = NotificationChannel(CHANNEL_ID, "Wifi Listener", NotificationManager.IMPORTANCE_MIN)
-                notificationManager.createNotificationChannel(channel)
-            }
-            return true
+    private fun createChannel() {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (notificationManager.getNotificationChannel(CHANNEL_ID) == null) {
+            val channel = NotificationChannel(CHANNEL_ID, "Wifi Listener", NotificationManager.IMPORTANCE_MIN)
+            notificationManager.createNotificationChannel(channel)
         }
-        return false
     }
 
-    fun persistentNotification(title: String, text: String) {
+    private fun persistentNotification(title: String, text: String) {
         Log.i(TAG, "background: $title, $text")
 
         val mBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
@@ -93,9 +85,11 @@ class WifiListenerService : Service() {
         startForeground(WIFI_NOTIFICATION_ID, mBuilder.build())
     }
 
-    fun registerCallback() {
+    private fun registerCallback() {
         val mgr = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val builder = NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+        // todo: register callbacks for all registered networks by ssid.
+        //  builder.setNetworkSpecifier(camera.ssid)
         val requirements = builder.build()
 
         mgr.registerNetworkCallback(requirements, wifi(this))
