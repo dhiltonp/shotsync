@@ -10,12 +10,12 @@ import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import com.shortsteplabs.gpstest.LocationReceiver
 import com.shortsteplabs.shotsync.R
 import com.shortsteplabs.shotsync.camera.Discover
 import com.shortsteplabs.shotsync.db.DB
 import com.shortsteplabs.shotsync.db.getCamera
 import com.shortsteplabs.shotsync.sync.SyncService.Companion.startSync
-import com.shortsteplabs.shotsync.ui.Permissions.Companion.WRITE_EXTERNAL
 import com.shortsteplabs.shotsync.util.RecursiveDelete
 import com.shortsteplabs.shotsync.util.filesExist
 import com.shortsteplabs.shotsync.wificonnected.WifiListenerService
@@ -51,7 +51,8 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         enableStartSync()
         enableDeleteDownloaded()
-        startService(Intent(this, WifiListenerService::class.java))
+        WifiListenerService.startListener(this)
+        LocationReceiver.startUpdates(this)
     }
 
     fun enableStartSync() {
@@ -92,7 +93,7 @@ class MainActivity : AppCompatActivity() {
     fun pairCamera(view: View) {
         val activity = this
 
-        Permissions(this).requestFilePermissions()
+        Permissions(this).requestPermissions()
         Permissions(this).requestIgnoreBattery()
 
         val builder = AlertDialog.Builder(this)
@@ -121,9 +122,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == WRITE_EXTERNAL) {
-            Permissions(this).requestFilePermissionsCallback(permissions, grantResults)
-        }
+        Permissions(this).requestPermissionsCallback(permissions, grantResults)
     }
 
     fun startSync(view: View) {

@@ -9,6 +9,7 @@ import android.provider.MediaStore
 import android.support.v4.app.ActivityCompat
 import android.util.Log
 import android.webkit.MimeTypeMap
+import com.shortsteplabs.gpstest.LocationReceiver
 import com.shortsteplabs.shotsync.HttpHelper
 import com.shortsteplabs.shotsync.camera.OlyEntry
 import com.shortsteplabs.shotsync.camera.OlyInterface
@@ -66,7 +67,8 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
     }
 
     private fun syncLoop() {
-        // request new geolocation
+        // request locations be updated
+        LocationReceiver.flush(syncService)
         discoverFiles()
         updateTime()
         // geotagFiles() // (also update file.bytes when done)

@@ -1,6 +1,7 @@
 package com.shortsteplabs.shotsync.ui
 
-import android.Manifest
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -37,44 +38,62 @@ import com.shortsteplabs.shotsync.db.getCamera
 
 class Permissions(private val activity: Activity): FragmentActivity() {
     companion object {
-        const val WRITE_EXTERNAL = 1
+        const val PERMISSIONS = 1
     }
 
-    fun requestFilePermissions() {
-        // TODO: handle the callback
+    fun requestPermissions() {
         val neededPermissions = mutableListOf<String>()
 
-        val writePermission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        if (writePermission != PackageManager.PERMISSION_GRANTED) {
-            neededPermissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            ActivityCompat.requestPermissions(
-                    activity,
-                    neededPermissions.toTypedArray(),
-                    WRITE_EXTERNAL
-            )
+        addPermission(WRITE_EXTERNAL_STORAGE, neededPermissions)
+        addPermission(ACCESS_FINE_LOCATION, neededPermissions)
+
+        if (neededPermissions.size > 0) {
+            ActivityCompat.requestPermissions(activity, neededPermissions.toTypedArray(), PERMISSIONS)
         }
     }
 
-    fun requestFilePermissionsCallback(permissions: Array<out String>, grantResults: IntArray) {
-        val granted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+    fun requestPermission(permission: String) {
+        val neededPermissions = mutableListOf<String>()
+        addPermission(permission, neededPermissions)
+        if (neededPermissions.size > 0) {
+            ActivityCompat.requestPermissions(activity, neededPermissions.toTypedArray(), PERMISSIONS)
+        }
+    }
 
+    private fun addPermission(permission: String, neededPermissions: MutableList<String>) {
+        val locationPermission = ActivityCompat.checkSelfPermission(activity, permission)
+        if (locationPermission != PackageManager.PERMISSION_GRANTED) {
+            neededPermissions.add(permission)
+        }
+    }
+
+    fun requestPermissionsCallback(permissions: Array<out String>, grantResults: IntArray) {
         class dbPermissions: AsyncTask<Void, Void, Void?>() {
             override fun doInBackground(vararg params: Void?): Void? {
                 val camera = getCamera(DB.getInstance(activity))
-                if (granted) {
-                    camera.syncFiles = true
-                } else {
-                    camera.syncFiles = false
-                    camera.syncJPG = false
-                    camera.syncRAW = false
-                    camera.syncVID = false
+
+                for (i in 0 until permissions.size) {
+                    if (permissions[i] == ACCESS_FINE_LOCATION) {
+                        camera.syncGPS = grantResults[i] == PackageManager.PERMISSION_GRANTED
+                    } else if (permissions[i] == WRITE_EXTERNAL_STORAGE) {
+                        if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                            camera.syncFiles = true
+                        } else {
+                            camera.syncFiles = false
+                            camera.syncJPG = false
+                            camera.syncRAW = false
+                            camera.syncVID = false
+                        }
+                    }
                 }
+
                 DB.getInstance(activity).cameraDao().update(camera)
                 return null
             }
         }
         dbPermissions().execute()
     }
+
 
     fun requestIgnoreBattery() {
         if (Build.VERSION.SDK_INT >= 23) {

@@ -1,5 +1,7 @@
 package com.shortsteplabs.shotsync.ui
 
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.AsyncTask
@@ -41,7 +43,8 @@ class CameraSettingsFragment: PreferenceFragment() {
             getString(R.string.auto_sync_key) -> if (autoSync()) Permissions(activity).requestIgnoreBattery()
             getString(R.string.sync_jpg_key),
             getString(R.string.sync_raw_key),
-            getString(R.string.sync_vid_key) -> if (syncFiles()) Permissions(activity).requestFilePermissions()
+            getString(R.string.sync_vid_key) -> if (syncFiles()) Permissions(activity).requestPermission(WRITE_EXTERNAL_STORAGE)
+            getString(R.string.sync_gps_key) -> if (syncGPS()) Permissions(activity).requestPermission(ACCESS_FINE_LOCATION)
         // todo: trigger ui refresh when camera entry in db is updated...
         }
     }
@@ -93,6 +96,11 @@ class CameraSettingsFragment: PreferenceFragment() {
         val syncRAW = prefs.getBoolean(getString(R.string.sync_raw_key), false)
         val syncVID = prefs.getBoolean(getString(R.string.sync_vid_key), false)
         return syncJPG || syncRAW || syncVID
+    }
+
+    private fun syncGPS(): Boolean {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
+        return prefs.getBoolean(getString(R.string.sync_gps_key), true)
     }
 
     private fun updateCamera() {

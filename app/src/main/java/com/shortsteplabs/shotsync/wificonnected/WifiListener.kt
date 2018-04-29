@@ -11,6 +11,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
 import android.os.IBinder
+import android.support.annotation.RequiresApi
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 import com.shortsteplabs.shotsync.R
@@ -54,6 +55,7 @@ class WifiListenerService : Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun createChannel() {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (notificationManager.getNotificationChannel(CHANNEL_ID) == null) {
@@ -101,6 +103,12 @@ class WifiListenerService : Service() {
             Log.d(TAG, "onAvailable")
             startAutoSync(context)
             super.onAvailable(network)
+        }
+    }
+
+    companion object {
+        fun startListener(context: Context) {
+            context.startService(Intent(context, WifiListenerService::class.java))
         }
     }
 }
