@@ -84,11 +84,13 @@ class Permissions(private val activity: Activity): FragmentActivity() {
                     activity.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS))
                 } catch (e: ActivityNotFoundException) {
                     val builder = AlertDialog.Builder(activity)
-                    builder.setMessage("Mark app as 'Don't Optimize' for background syncs")
-                    builder.setPositiveButton("Open", fun(dialog: DialogInterface?, id: Int) {
+                    builder.setMessage("Automatic Syncs require ignoring battery optimizations. " +
+                            "The app is careful to not impact battery life in standby, but syncs do use battery. " +
+                            "Tap 'Not optimized', switch to 'All apps'. Find 'ShotSync' and select 'Don't optimize'.")
+                    builder.setPositiveButton("Open", fun(_: DialogInterface?, _: Int) {
                         activity.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
                     })
-                    builder.setNegativeButton("Cancel", fun(_: DialogInterface?, _: Int) {
+                    builder.setNegativeButton("No Automatic Syncs", fun(_: DialogInterface?, _: Int) {
                         class noAutoSync: AsyncTask<Void, Void, Void?>() {
                             override fun doInBackground(vararg params: Void?): Void? {
                                 val camera = getCamera(DB.getInstance(activity))
