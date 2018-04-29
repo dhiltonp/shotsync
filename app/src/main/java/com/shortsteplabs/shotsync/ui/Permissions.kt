@@ -85,10 +85,12 @@ class Permissions(private val activity: Activity): FragmentActivity() {
                 } catch (e: ActivityNotFoundException) {
                     val builder = AlertDialog.Builder(activity)
                     builder.setMessage("Automatic Syncs require ignoring battery optimizations. " +
-                            "The app is careful to not impact battery life in standby, but syncs do use battery. " +
-                            "Tap 'Not optimized', switch to 'All apps'. Find 'ShotSync' and select 'Don't optimize'.")
-                    builder.setPositiveButton("Open", fun(_: DialogInterface?, _: Int) {
-                        activity.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                            "ShotSync is careful to not impact battery life between syncs, but syncs use battery.\n\n" +
+                            "Continue, then tap 'Not optimized', switch to 'All apps'. Find 'ShotSync' and select 'Don't optimize'.")
+                    builder.setPositiveButton("Continue", fun(_: DialogInterface?, _: Int) {
+                        val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                        intent.flags = intent.flags or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS
+                        activity.startActivity(intent)
                     })
                     builder.setNegativeButton("No Automatic Syncs", fun(_: DialogInterface?, _: Int) {
                         class noAutoSync: AsyncTask<Void, Void, Void?>() {
