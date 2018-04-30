@@ -9,13 +9,13 @@ import android.provider.MediaStore
 import android.support.v4.app.ActivityCompat
 import android.util.Log
 import android.webkit.MimeTypeMap
-import com.shortsteplabs.gpstest.LocationReceiver
 import com.shortsteplabs.shotsync.HttpHelper
 import com.shortsteplabs.shotsync.camera.OlyEntry
 import com.shortsteplabs.shotsync.camera.OlyInterface
 import com.shortsteplabs.shotsync.db.Camera
 import com.shortsteplabs.shotsync.db.DB
 import com.shortsteplabs.shotsync.db.DBFile
+import com.shortsteplabs.shotsync.gps.LocationReceiver
 import com.shortsteplabs.shotsync.ui.SyncNotification
 import java.io.File
 import java.util.*
@@ -67,11 +67,9 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
     }
 
     private fun syncLoop() {
-        // request locations be updated
         LocationReceiver.flush(syncService)
         discoverFiles()
         updateTime()
-        // geotagFiles() // (also update file.bytes when done)
         enableShooting()
         while (true) {
             downloadFiles()
@@ -79,6 +77,12 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
             if(!running) break
             discoverFiles()
         }
+    }
+
+    private fun geotagFiles() {
+        OlyInterface.listFiles(client, 0)
+
+        // (also update file.bytes when done)
     }
 
     private fun shutdownCamera() {
@@ -223,8 +227,30 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         values.put(MediaStore.Images.ImageColumns.MIME_TYPE, MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension))
         values.put(MediaStore.Images.ImageColumns.SIZE, file.length())
         // TODO: add LATITUDE, LONGITUDE, ORIENTATION, WIDTH, HEIGHT... THUMBNAIL <- may help strava not crash?
-
+        val loc = estimateLocation(resource)
+        if (loc != null) {
+            values.put(MediaStore.Images.ImageColumns.LATITUDE, loc.latitude)
+            values.put(MediaStore.Images.ImageColumns.LONGITUDE, loc.longitude)
+        }
         syncService.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+    }
+
+    data class Loc(val latitude: Double, val longitude: Double)
+    private fun estimateLocation(resource: OlyEntry): Loc? {
+        // returns the closest 0-2 locations within 30 minutes of this photo
+        val locations = DB.getInstance(syncService).locationDao().closest(resource.time)
+        if (locations.size == 1) {
+            return Loc(locations[0].latitude, locations[0].longitude)
+        } else if (locations.size == 2) {
+            // TODO: switch to radians (latitude 180 and -180 are next to each other), more heavily weight starting/stopping points
+            // linear estimation
+            val location0Percent = (locations[1].time - resource.time).toDouble() / (locations[1].time - locations[0].time).toDouble()
+            val location1Percent = 1-location0Percent
+            val latitude = locations[1].latitude*location1Percent + locations[0].latitude*location0Percent
+            val longitude = locations[1].longitude*location1Percent + locations[0].longitude*location0Percent
+            return Loc(latitude, longitude)
+        }
+        return null
     }
 
     private fun moveDownload(resource: OlyEntry, partial: File): File {

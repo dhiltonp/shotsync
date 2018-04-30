@@ -10,11 +10,11 @@ import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import com.shortsteplabs.gpstest.LocationReceiver
 import com.shortsteplabs.shotsync.R
 import com.shortsteplabs.shotsync.camera.Discover
 import com.shortsteplabs.shotsync.db.DB
 import com.shortsteplabs.shotsync.db.getCamera
+import com.shortsteplabs.shotsync.gps.LocationReceiver
 import com.shortsteplabs.shotsync.sync.SyncService.Companion.startSync
 import com.shortsteplabs.shotsync.util.RecursiveDelete
 import com.shortsteplabs.shotsync.util.filesExist
@@ -39,8 +39,6 @@ import kotlinx.android.synthetic.main.content_main.*
  */
 
 class MainActivity : AppCompatActivity() {
-    val perms = Permissions(this)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)

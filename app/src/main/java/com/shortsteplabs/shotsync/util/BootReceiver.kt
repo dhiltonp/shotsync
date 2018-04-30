@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.shortsteplabs.gpstest.LocationReceiver
+import com.shortsteplabs.shotsync.gps.LocationReceiver
 import com.shortsteplabs.shotsync.wificonnected.WifiListenerService
 
 class BootReceiver : BroadcastReceiver() {

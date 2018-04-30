@@ -37,6 +37,6 @@ interface LocationDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertNew(vararg locations: Location)
 
-    @Query("SELECT * FROM location WHERE time >= :oldest and time <= :newest")
-    fun range(oldest: Long, newest: Long=Long.MAX_VALUE): List<Location>
+    @Query("SELECT * from location WHERE abs(time-:time)<30*60*1000 AND time in (SELECT min(time) FROM location WHERE time >= :time union SELECT max(time) from location WHERE time <= :time) order by time desc")
+    fun closest(time: Long): List<Location>
 }

@@ -1,4 +1,4 @@
-package com.shortsteplabs.gpstest
+package com.shortsteplabs.shotsync.gps
 
 import android.Manifest
 import android.app.PendingIntent
@@ -7,11 +7,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
+import android.os.AsyncTask
 import android.support.v4.app.ActivityCompat
 import android.util.Log
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
-
 import com.google.android.gms.location.LocationServices
 import com.shortsteplabs.shotsync.db.DB
 
@@ -36,20 +36,26 @@ class LocationReceiver : BroadcastReceiver() {
     }
 
     private fun locationsHandler(context: Context, locations: List<Location>) {
-        val dbLocations = mutableListOf<com.shortsteplabs.shotsync.db.Location>()
+        class locationUpdate: AsyncTask<Context, Void, Void?>() {
+            override fun doInBackground(vararg params: Context): Void? {
+                val dbLocations = mutableListOf<com.shortsteplabs.shotsync.db.Location>()
 
-        for (location in locations) {
-            Log.d(TAG, location.time.toString() + " " + location.accuracy.toString() + " " + location.latitude.toString() + " " + location.longitude.toString())
+                for (location in locations) {
+                    Log.d(TAG, location.time.toString() + " " + location.accuracy.toString() + " " + location.latitude.toString() + " " + location.longitude.toString())
 
-            val dbLocation = com.shortsteplabs.shotsync.db.Location()
-            dbLocation.time = location.time
-            dbLocation.latitude = location.latitude
-            dbLocation.longitude = location.longitude
-            dbLocation.accuracy = location.accuracy
+                    val dbLocation = com.shortsteplabs.shotsync.db.Location()
+                    dbLocation.time = location.time
+                    dbLocation.latitude = location.latitude
+                    dbLocation.longitude = location.longitude
+                    dbLocation.accuracy = location.accuracy
 
-            dbLocations.add(dbLocation)
+                    dbLocations.add(dbLocation)
+                }
+                DB.getInstance(context).locationDao().insertNew(*dbLocations.toTypedArray())
+                return null
+            }
         }
-        DB.getInstance(context).locationDao().insertNew(*dbLocations.toTypedArray())
+        locationUpdate().execute(context)
     }
 
     companion object {

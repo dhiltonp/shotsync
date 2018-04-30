@@ -136,6 +136,74 @@ object OlyInterface {
         return false
     }
 
+    //get_gpsdivunit - returns 500 on my e-m5 ii
+    fun req_attachexifgps(client: HttpHelper) {
+
+    }
+
+    fun req_storegpsinfo(client: HttpHelper) {
+        // mode=new
+        // date=
+
+
+        /*
+maximum delay between samples in official app: 60s
+
+2 files - log and sns. sns is custom/proprietary. Data seems optional, file may be required?
+
+log file format sample:
+
+@Olympus/-0500/-0500
+$GPGGA,012323.1,3950.5160,N,08248.5405,W,1,00,00.00,0.0,M,0,M,0,*5f
+$GPRMC,012323,A,3950.5160,N,08248.5405,W,000.0,000.0,290418,00,*7
+$GPGGA,012333.9,3950.5162,N,08248.5402,W,1,00,00.00,0.0,M,0,M,0,*53
+$GPRMC,012333,A,3950.5162,N,08248.5402,W,000.0,000.0,290418,00,*3
+
+http://aprs.gids.nl/nmea/#gga
+http://aprs.gids.nl/nmea/#rmc
+so:
+
+$GPGGA,$time,$latitude,$NS,$longitude,$EW,1,00,00.00,0.0,M,0,M,0,*$checksum
+$GPRMC,$time,A,$latitude,$NS,$longitude,$EW,000.0,000,$date,00,*$checksum
+
+
+checksum:
+https://rietman.wordpress.com/2008/09/25/how-to-calculate-the-nmea-checksum/
+
+To calculate the checksum you parse all characters between $ and * from the NMEA
+sentence into a new string.  In the examples below the name of this new string
+is stringToCalculateTheChecksumOver. Then just XOR the first character with the
+next character, until the end of the string.
+
+
+https://electronics.stackexchange.com/questions/288521/olympus-tg-tracker-what-does-this-data-stand-for/288527#288527
+my sns:
+@Olympus/-0500/-0500
+$OLTIM,20180430,023819
+$OLCMP,
+$OLPRE,998,129.8,425.8
+$OLTMP,
+$OLACC,,,
+
+their sns
+$OLTIM,20170224,045641// Time obviously, no probs here
+$OLCMP,23.7 // Compass
+$OLPRE,963,421.2,1389.9 // Pressure
+$OLTMP,20.5,1,0 // Temperature in F's, no probs here
+$OLACC,-1007.1,-3.6,4.7 // Acceleration (vector, 1G down)
+
+         */
+
+//<http_method type="post">
+//      <cmd1 name="mode">
+//	<param1 name="new"/>
+//	<param1 name="append"/>
+//	<cmd2 name="date"/>
+//      </cmd1>
+//    </http_method>
+    }
+
+
     fun getCamInfo(client: HttpHelper): String {
         val parser = Xml.newPullParser()
         parser.setInput(StringReader(client.get("http://192.168.0.10/get_caminfo.cgi")))

@@ -49,6 +49,7 @@
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="@string/sync_gps_key"
+            android:summary="@string/sync_gps_warning"
             android:title="@string/sync_gps_title" />
         <CheckBoxPreference
             android:defaultValue="false"

@@ -26,6 +26,7 @@
     <string name="category_gps_title">GPS</string>
     <string name="sync_gps_key">sync_gps</string>
     <string name="sync_gps_title">Geotag Images</string>
+    <string name="sync_gps_warning">Geotags images as they are synced to phone.\nDoes not update geotag on camera.</string>
     <string name="maintain_utc_key">maintain_utc</string>
     <string name="maintain_utc_title">Maintain UTC</string>
     <string name="maintain_utc_warning">Conflicts with official app</string>
