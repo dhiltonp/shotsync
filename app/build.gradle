@@ -7,6 +7,14 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'key0'
+            keyPassword 'blipblip3'
+            storeFile file('/home/david/Documents/shotsync.keystore')
+            storePassword 'blipblip3'
+        }
+    }
     compileSdkVersion 27
     defaultConfig {
         applicationId "com.shortsteplabs.shotsync"
@@ -15,6 +23,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.config
     }
     buildTypes {
         release {
@@ -34,13 +43,9 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     implementation 'com.android.support:design:27.1.1'
     implementation 'android.arch.persistence.room:runtime:1.0.0'
-
     implementation 'com.google.android.gms:play-services-location:15.0.0'
-
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
-
     kapt 'android.arch.persistence.room:compiler:1.0.0'
-
     testImplementation 'junit:junit:4.12'
     testCompile 'io.mockk:mockk:1.7.15'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'

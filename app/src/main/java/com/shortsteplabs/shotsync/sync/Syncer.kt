@@ -154,10 +154,11 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
             if (camFile.filename !in dbFiles) continue
             if (!canWrite(camFile.bytes)) break
             notification.status("Syncing with ${camera.model}", "Downloading ${downloaded+1}/${dbFiles.size} new: ${camFile.filename}")
-            downloadFile(camFile)
-            dbFiles[camFile.filename]!!.downloaded = true
-            DB.getInstance(syncService).fileDao().update(dbFiles[camFile.filename]!!)
-            downloaded++
+            if (downloadFile(camFile)) {
+                dbFiles[camFile.filename]!!.downloaded = true
+                DB.getInstance(syncService).fileDao().update(dbFiles[camFile.filename]!!)
+                downloaded++
+            }
         }
         notification.clearable("Syncing with ${camera.model}", "$downloaded new files downloaded!")
     }
@@ -202,19 +203,20 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         return ActivityCompat.checkSelfPermission(syncService, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun downloadFile(file: OlyEntry) {
+    private fun downloadFile(file: OlyEntry): Boolean {
         var partial: File
         for (i in 0 until 3) {
             partial = getPublicFile(file.filename + ".partial")
             OlyInterface.download(client, file, partial)
             if (partial.length() != file.bytes) {
-                Log.e(TAG, "${file.filename}: downloaded vs. expected bytes don't match")
+                Log.e(TAG, "${file.filename}: downloaded vs. expected bytes don't match: ${partial.length()} vs. ${file.bytes}")
             } else {
                 val final = moveDownload(file, partial)
                 registerFile(file, final)
-                break
+                return true
             }
         }
+        return false
     }
 
     private fun registerFile(resource: OlyEntry, file: File) {
