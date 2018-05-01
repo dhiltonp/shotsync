@@ -58,13 +58,13 @@ class HttpHelper {
                 val chunkBytes = inputStream.read(buf)
                 if (chunkBytes == -1) {
                     if (response.code() == 503) {
-                        Log.d(TAG, "503 - wait a bit...")
-                        Thread.sleep(2000)
+                        Log.d(TAG, "503 - wait a minute (todo: find a real workaround)")
+                        Thread.sleep(60000)
                     }
                     break
                 }
                 outputStream.write(buf, 0, chunkBytes)
-                Log.d(TAG, "bytes written")
+//                Log.d(TAG, "bytes written")
             } catch (e: java.net.ProtocolException) {
                 Log.d(TAG, "NoConnection")
                 throw NoConnection(e.toString())

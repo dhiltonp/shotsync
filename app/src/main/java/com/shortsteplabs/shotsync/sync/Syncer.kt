@@ -60,8 +60,8 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         // TODO: do the following asynchronously, stopSelf when it stops running. also allow cancellation.
         try {
             syncLoop()
-        } catch (e: HttpHelper.NoConnection) {
-            notification.clearable("Sync stopped", "Unable to connect")
+        } catch (e: Throwable) {
+            notification.clearable("Sync stopped", e.toString())
         }
         stop()
     }

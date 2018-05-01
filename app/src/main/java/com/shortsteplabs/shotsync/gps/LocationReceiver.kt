@@ -31,7 +31,10 @@ class LocationReceiver : BroadcastReceiver() {
                 locationsHandler(context, result.locations)
             }
         } else if (SINGLE_UPDATE == intent.action) {
-            locationsHandler(context, listOf(intent.getParcelableExtra(EXTRA_LOCATION_RESULT)))
+            val result: Location? = if (intent.hasExtra(EXTRA_LOCATION_RESULT)) intent.getParcelableExtra(EXTRA_LOCATION_RESULT) else null
+            if (result != null) {
+                locationsHandler(context, listOf(result))
+            }
         }
     }
 
