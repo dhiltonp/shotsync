@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 package com.shortsteplabs.shotsync.sync
 
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.shortsteplabs.shotsync.db.DB
@@ -79,36 +80,29 @@ class SyncService : ManualIntentService("SyncService") {
         private val ACTION_START_AUTO_SYNC = "com.shortsteplabs.shotsync.action.START_AUTO_SYNC"
         private val ACTION_STOP_SYNC = "com.shortsteplabs.shotsync.action.STOP_SYNC"
         private val ACTION_CANCEL_SYNC = "com.shortsteplabs.shotsync.action.CANCEL_SYNC"
-        private val ACTION_DISCOVER_CAMERA = "com.shortsteplabs.shotsync.action.ACTION_DISCOVER_CAMERA"
 
-        fun startSync(context: Context) {
+        fun syncIntent(context: Context): PendingIntent {
             val intent = Intent(context, SyncService::class.java)
             intent.action = ACTION_START_SYNC
-            context.startService(intent)
+            return PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         }
 
-        fun startAutoSync(context: Context) {
+        fun autoSyncIntent(context: Context): PendingIntent {
             val intent = Intent(context, SyncService::class.java)
-            intent.action = ACTION_START_AUTO_SYNC
-            context.startService(intent)
+            intent.action = SyncService.ACTION_START_AUTO_SYNC
+            return PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         }
 
-        fun stopSync(context: Context) {
+        fun stopSyncIntent(context: Context): PendingIntent {
             val intent = Intent(context, SyncService::class.java)
             intent.action = ACTION_STOP_SYNC
-            context.startService(intent)
+            return PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         }
 
-        fun cancelSync(context: Context) {
+        fun cancelSyncIntent(context: Context): PendingIntent {
             val intent = Intent(context, SyncService::class.java)
             intent.action = ACTION_CANCEL_SYNC
-            context.startService(intent)
-        }
-
-        fun discover(context: Context) {
-            val intent = Intent(context, SyncService::class.java)
-            intent.action = ACTION_DISCOVER_CAMERA
-            context.startService(intent)
+            return PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         }
     }
 }

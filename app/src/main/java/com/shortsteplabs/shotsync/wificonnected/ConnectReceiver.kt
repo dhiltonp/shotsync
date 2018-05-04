@@ -28,6 +28,8 @@ import com.shortsteplabs.shotsync.sync.SyncService
 
 // Wifi notifications for Android < 26/8.0/Oreo
 // (26+ doesn't broadcast wifi.STATE_CHANGE)
+// todo: when support is dropped for 23/5.1/Marshmallow, drop ConnectReceiver for WifiListenerService
+//  (use a PendingIntent instead of Wifi())
 
 class ConnectReceiver : BroadcastReceiver() {
     private val TAG = "ConnectReceiver"
@@ -45,6 +47,6 @@ class ConnectReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (!isConnected(intent)) return
         Log.d(TAG, intent.action)
-        SyncService.startAutoSync(context)
+        SyncService.autoSyncIntent(context).send()
     }
 }

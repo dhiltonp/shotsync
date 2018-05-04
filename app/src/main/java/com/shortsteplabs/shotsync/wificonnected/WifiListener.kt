@@ -15,7 +15,7 @@ import android.support.annotation.RequiresApi
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 import com.shortsteplabs.shotsync.R
-import com.shortsteplabs.shotsync.sync.SyncService.Companion.startAutoSync
+import com.shortsteplabs.shotsync.sync.SyncService
 
 /**
  * Copyright (C) 2018  David Hilton <david.hilton.p@gmail.com>
@@ -34,9 +34,6 @@ import com.shortsteplabs.shotsync.sync.SyncService.Companion.startAutoSync
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-// Wifi notifications for android >= 26/8.0/Oreo.
-// todo: only show notification if any camera has autosync enabled
-
 class WifiListenerService : Service() {
     val TAG = "WifiListenerService"
     val CHANNEL_ID = TAG
@@ -49,6 +46,7 @@ class WifiListenerService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (Build.VERSION.SDK_INT >= 26) {
             createChannel()
+            // todo: only register callback and set notification if autoSync = true
             registerCallback()
             persistentNotification("", "Listening for new connections to cameras")
         }
@@ -87,21 +85,25 @@ class WifiListenerService : Service() {
         startForeground(WIFI_NOTIFICATION_ID, mBuilder.build())
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     private fun registerCallback() {
         val mgr = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val builder = NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-        // todo: register callbacks for all registered networks by ssid.
-        //  builder.setNetworkSpecifier(camera.ssid)
-        val requirements = builder.build()
 
-        mgr.registerNetworkCallback(requirements, wifi(this))
+        // the builder's setNetworkSpecifier might some day be used to allow registering only
+        //  specific SSIDs. As of 8.1/27, only one WIFI network type uses it, a form of P2P:
+        //  WifiAwareSession().createNetworkSpecifierOpen(mac_address).
+        val requirements = NetworkRequest.Builder()
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .build()
+
+        mgr.registerNetworkCallback(requirements, Wifi(this))
     }
 
-    class wifi(val context: Context): ConnectivityManager.NetworkCallback() {
+    class Wifi(val context: Context): ConnectivityManager.NetworkCallback() {
         val TAG = "wifi listener"
         override fun onAvailable(network: Network?) {
             Log.d(TAG, "onAvailable")
-            startAutoSync(context)
+            SyncService.autoSyncIntent(context).send()
             super.onAvailable(network)
         }
     }

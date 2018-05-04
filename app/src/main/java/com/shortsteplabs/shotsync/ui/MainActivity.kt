@@ -15,7 +15,7 @@ import com.shortsteplabs.shotsync.camera.Discover
 import com.shortsteplabs.shotsync.db.DB
 import com.shortsteplabs.shotsync.db.getCamera
 import com.shortsteplabs.shotsync.gps.LocationReceiver
-import com.shortsteplabs.shotsync.sync.SyncService.Companion.startSync
+import com.shortsteplabs.shotsync.sync.SyncService
 import com.shortsteplabs.shotsync.util.RecursiveDelete
 import com.shortsteplabs.shotsync.util.filesExist
 import com.shortsteplabs.shotsync.wificonnected.WifiListenerService
@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun startSync(view: View) {
-        startSync(this)
+        SyncService.syncIntent(this).send()
         notifyBottom(this, "Sync started", 3)
     }
 

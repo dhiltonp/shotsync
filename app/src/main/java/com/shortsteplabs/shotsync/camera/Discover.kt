@@ -35,25 +35,24 @@ class Discover {
         val (ssid, network) = try {
             getWifiConnection(context)
         } catch (e: NoWifi) {
-            return DiscoverResult(false,"Not connected to WiFi")
+            return DiscoverResult(false, "Not connected to WiFi")
         }
 
         val match = DB.getInstance(context).cameraDao().findBySSID(ssid)
         if (match?.ssid != ssid) {
             bindNetwork(context, network)
+            val client = HttpHelper()
 
             val camera = getCamera(DB.getInstance(context), 1)
             camera.ssid = ssid
             camera.timeAdded = Date().time
             camera.lastTimeZoneOffset = TimeZone.getDefault().getOffset(Date().time).toLong()
 
-            val client = HttpHelper()
-
             try {
                 camera.model = OlyInterface.getCamInfo(client)
                 camera.apiVersion = OlyInterface.getVersion(client)
             } catch (e: HttpHelper.NoConnection) {
-                return DiscoverResult(false,"Not connected to compatible camera; double-check wifi?")
+                return DiscoverResult(false, "Not connected to compatible camera; double-check wifi?")
             }
 
             DB.getInstance(context).cameraDao().update(camera)
