@@ -43,11 +43,11 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     implementation 'com.android.support:design:27.1.1'
     implementation 'android.arch.persistence.room:runtime:1.0.0'
-    implementation 'com.google.android.gms:play-services-location:15.0.0'
+    implementation 'com.google.android.gms:play-services-location:15.0.1'
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
     kapt 'android.arch.persistence.room:compiler:1.0.0'
     testImplementation 'junit:junit:4.12'
-    testCompile 'io.mockk:mockk:1.7.15'
+    testImplementation 'io.mockk:mockk:1.7.15'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }

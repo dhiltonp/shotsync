@@ -28,7 +28,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.CameraSettingsActivity"
+            android:name=".ui.MainSettingsActivity"
             android:parentActivityName=".ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.SETTINGS" />

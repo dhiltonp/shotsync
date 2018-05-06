@@ -17,6 +17,7 @@ import com.shortsteplabs.shotsync.db.DB
 import com.shortsteplabs.shotsync.db.DBFile
 import com.shortsteplabs.shotsync.gps.LocationReceiver
 import com.shortsteplabs.shotsync.ui.SyncNotification
+import com.shortsteplabs.shotsync.util.Settings
 import java.io.File
 import java.util.*
 
@@ -37,7 +38,7 @@ import java.util.*
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-class Syncer(val syncService: SyncService, val camera: Camera) {
+class Syncer(val syncService: SyncService, val settings: Settings, val camera: Camera) {
     val TAG = "Syncer"
     val notification = SyncNotification(syncService)
     val client = HttpHelper()
@@ -86,7 +87,7 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
     }
 
     private fun shutdownCamera() {
-        if (camera.autoOff) {
+        if (settings.autoOff) {
             OlyInterface.shutdown(client)
             stop()
         } else {
@@ -95,7 +96,7 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
     }
 
     private fun enableShooting(): Boolean {
-        if (camera.liveShooting == true) {
+        if (settings.liveShooting == true) {
             notification.status("Syncing with ${camera.model}", "Enabling shooting")
             OlyInterface.enableShooting(client)
             return true
@@ -107,7 +108,7 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         notification.status("Syncing with ${camera.model}", "Updating clock")
 
         val date = Date()
-        val tz = if (camera.maintainUTC) TimeZone.getTimeZone("UTC") else TimeZone.getDefault()
+        val tz = if (settings.maintainUTC) TimeZone.getTimeZone("UTC") else TimeZone.getDefault()
         if (OlyInterface.setTime(client, date, tz)) {
             camera.lastTimeZoneOffset = tz.getOffset(date.time).toLong()
             DB.getInstance(syncService).cameraDao().update(camera)
@@ -131,10 +132,10 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
     }
 
     private fun downloadFiles() {
-        if (!camera.syncFiles) return
+        if (!settings.syncFiles) return
 
         notification.status("Syncing with ${camera.model}", "Selecting files for download")
-        val oldest = if (camera.syncPeriod > 0L) Date().time - camera.syncPeriod else 0L
+        val oldest = if (settings.syncPeriod > 0L) Date().time - settings.syncPeriod else 0L
 
         val dbFiles = mutableMapOf<String, DBFile>()
         for (file in DB.getInstance(syncService).fileDao().toDownload(oldest)) {
@@ -167,13 +168,13 @@ class Syncer(val syncService: SyncService, val camera: Camera) {
         val jpg = setOf("JPG", "JPEG")
         val raw = setOf("ARW", "CR2", "CRW", "DCR", "DNG", "ERF", "K25", "KDC",
                 "MRW", "NEF", "ORF", "PEF", "RAF", "RAW", "SR2", "SRF", "X3F")
-        val vid = setOf("mp4", "3gp", "mov", "avi", "wmv")
+        val vid = setOf("MP4", "3GP", "MOV", "AVI", "WMV")
     }
 
     fun shouldWrite(file: DBFile) = when (file.extension.toUpperCase()) {
-        in jpg -> camera.syncJPG
-        in raw -> camera.syncRAW
-        in vid -> camera.syncVID
+        in jpg -> settings.syncJPG
+        in raw -> settings.syncRAW
+        in vid -> settings.syncVID
         else -> false
     }
 

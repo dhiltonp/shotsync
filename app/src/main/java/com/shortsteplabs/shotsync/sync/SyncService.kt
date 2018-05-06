@@ -22,6 +22,7 @@ import android.content.Context
 import android.content.Intent
 import com.shortsteplabs.shotsync.db.DB
 import com.shortsteplabs.shotsync.util.NoWifi
+import com.shortsteplabs.shotsync.util.Settings
 import com.shortsteplabs.shotsync.util.bindNetwork
 import com.shortsteplabs.shotsync.util.getWifiConnection
 
@@ -64,11 +65,12 @@ class SyncService : ManualIntentService("SyncService") {
         }
 
         if (syncer == null) {
+            val settings = Settings(this)
             val camera = DB.getInstance(this).cameraDao().findBySSID(ssid)
             if (camera != null) {
-                if (auto && ! camera.autoSync) return
+                if (auto && !settings.autoSync) return
                 bindNetwork(this, network)
-                syncer = Syncer(this, camera)
+                syncer = Syncer(this, settings, camera)
                 syncer!!.startSync()
             }
         }

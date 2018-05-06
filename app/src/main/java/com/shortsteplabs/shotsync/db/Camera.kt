@@ -33,20 +33,6 @@ class Camera {
     // offset is the number of milliseconds to add to UTC to get local time.
     // To convert from local time to UTC, *subtract* the offset.
     var lastTimeZoneOffset = 0L
-
-    var autoOff = true
-    var liveShooting = false
-    var autoSync = true
-    var syncFiles = true
-    var syncGPS = true
-    var syncTime = true
-
-    var syncPeriod = 86400000L
-    var syncJPG = true
-    var syncRAW = false
-    var syncVID = false
-
-    var maintainUTC = false
 }
 
 @Dao

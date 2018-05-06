@@ -8,15 +8,12 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.AsyncTask
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.FragmentActivity
 import android.support.v7.app.AlertDialog
-import com.shortsteplabs.shotsync.db.DB
-import com.shortsteplabs.shotsync.db.getCamera
 
 /**
 * Copyright (C) 2018  David Hilton <david.hilton.p@gmail.com>
@@ -52,6 +49,7 @@ class Permissions(private val activity: Activity): FragmentActivity() {
         }
     }
 
+    // todo: if permission request fails, clear the Setting that requires it...
     fun requestPermission(permission: String) {
         val neededPermissions = mutableListOf<String>()
         addPermission(permission, neededPermissions)
@@ -68,30 +66,20 @@ class Permissions(private val activity: Activity): FragmentActivity() {
     }
 
     fun requestPermissionsCallback(permissions: Array<out String>, grantResults: IntArray) {
-        class dbPermissions: AsyncTask<Void, Void, Void?>() {
-            override fun doInBackground(vararg params: Void?): Void? {
-                val camera = getCamera(DB.getInstance(activity))
+        val settings = com.shortsteplabs.shotsync.util.Settings(activity)
+        settings.async = true
 
-                for (i in 0 until permissions.size) {
-                    if (permissions[i] == ACCESS_FINE_LOCATION) {
-                        camera.syncGPS = grantResults[i] == PackageManager.PERMISSION_GRANTED
-                    } else if (permissions[i] == WRITE_EXTERNAL_STORAGE) {
-                        if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-                            camera.syncFiles = true
-                        } else {
-                            camera.syncFiles = false
-                            camera.syncJPG = false
-                            camera.syncRAW = false
-                            camera.syncVID = false
-                        }
-                    }
+        for (i in 0 until permissions.size) {
+            if (permissions[i] == ACCESS_FINE_LOCATION) {
+                settings.syncGPS = grantResults[i] == PackageManager.PERMISSION_GRANTED
+            } else if (permissions[i] == WRITE_EXTERNAL_STORAGE) {
+                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                    settings.syncJPG = false
+                    settings.syncRAW = false
+                    settings.syncVID = false
                 }
-
-                DB.getInstance(activity).cameraDao().update(camera)
-                return null
             }
         }
-        dbPermissions().execute()
     }
 
 
@@ -112,15 +100,8 @@ class Permissions(private val activity: Activity): FragmentActivity() {
                         activity.startActivity(intent)
                     })
                     builder.setNegativeButton("No Automatic Syncs", fun(_: DialogInterface?, _: Int) {
-                        class noAutoSync: AsyncTask<Void, Void, Void?>() {
-                            override fun doInBackground(vararg params: Void?): Void? {
-                                val camera = getCamera(DB.getInstance(activity))
-                                camera.autoSync = false
-                                DB.getInstance(activity).cameraDao().update(camera)
-                                return null
-                            }
-                        }
-                        noAutoSync().execute()
+                        val settings = com.shortsteplabs.shotsync.util.Settings(activity)
+                        settings.autoSync = false
                     })
                     builder.show()
                 }
