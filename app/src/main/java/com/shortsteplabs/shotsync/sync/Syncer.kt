@@ -17,7 +17,7 @@ import com.shortsteplabs.shotsync.db.DB
 import com.shortsteplabs.shotsync.db.DBFile
 import com.shortsteplabs.shotsync.gps.LocationReceiver
 import com.shortsteplabs.shotsync.ui.SyncNotification
-import com.shortsteplabs.shotsync.util.Settings
+import com.shortsteplabs.shotsync.util.SettingsInterface
 import java.io.File
 import java.util.*
 
@@ -38,7 +38,7 @@ import java.util.*
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-class Syncer(val syncService: SyncService, val settings: Settings, val camera: Camera) {
+class Syncer(val syncService: SyncService, val settings: SettingsInterface, val camera: Camera) {
     val TAG = "Syncer"
     val notification = SyncNotification(syncService)
     val client = HttpHelper()

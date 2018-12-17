@@ -23,11 +23,26 @@ import com.shortsteplabs.shotsync.R.string.*
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+
+interface SettingsInterface {
+    val syncPeriod: Long
+    val syncFiles: Boolean
+    val autoOff: Boolean
+    val liveShooting: Boolean
+    var autoSync: Boolean
+    var syncJPG: Boolean
+    var syncRAW: Boolean
+    var syncVID: Boolean
+    var syncGPS: Boolean
+    var maintainUTC: Boolean
+    val syncTime: Boolean
+}
+
 // Settings workflow: automatically updated via ui.
 //  When it's time for a Sync, copy the stored settings as a default
 //  then apply local changes on top as necessary...
 
-class Settings(val context: Context) {
+class Settings(val context: Context): SettingsInterface {
     val prefs = PreferenceManager.getDefaultSharedPreferences(context)
     var async = false
 
@@ -54,43 +69,44 @@ class Settings(val context: Context) {
         }
     }
 
-    val syncPeriod: Long
+    override val syncPeriod: Long
         get() = prefs.getString(context.getString(R.string.sync_period_key), "86400000").toLong()
 
-    val syncFiles: Boolean
+    override val syncFiles: Boolean
         get() = syncJPG || syncRAW || syncVID
 
 
-    val autoOff: Boolean
+    override val autoOff: Boolean
         get() = prefs.getString(context.getString(R.string.sync_mode_key), "") == context.getString(R.string.sync_then_off_value)
 
-    val liveShooting: Boolean
+    override val liveShooting: Boolean
         get() = prefs.getString(context.getString(R.string.sync_mode_key), "") != context.getString(R.string.sync_then_off_value)
 
-    var autoSync: Boolean
+    override var autoSync: Boolean
         get() = getBoolean(auto_sync_key, true)
         set(value) = setBoolean(auto_sync_key, value)
-    var syncJPG: Boolean
+
+    override var syncJPG: Boolean
         get() = getBoolean(sync_jpg_key, true)
         set(value) = setBoolean(sync_jpg_key, value)
 
-    var syncRAW: Boolean
+    override var syncRAW: Boolean
         get() = getBoolean(sync_raw_key, false)
         set(value) = setBoolean(sync_raw_key, value)
 
-    var syncVID: Boolean
+    override var syncVID: Boolean
         get() = getBoolean(sync_vid_key, false)
         set(value) = setBoolean(sync_vid_key, value)
 
-    var syncGPS: Boolean
+    override var syncGPS: Boolean
         get() = getBoolean(sync_gps_key, true)
         set(value) = setBoolean(sync_gps_key, value)
 
-    var maintainUTC: Boolean
+    override var maintainUTC: Boolean
         get() = getBoolean(maintain_utc_key, false)
         set(value) = setBoolean(maintain_utc_key, value)
 
-    val syncTime = true
+    override val syncTime = true
 
 //    var syncFiles = true
 //    var syncTime = true

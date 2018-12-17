@@ -4,6 +4,7 @@ package com.shortsteplabs.shotsync.sync
 import android.support.test.runner.AndroidJUnit4
 import com.shortsteplabs.shotsync.db.Camera
 import com.shortsteplabs.shotsync.db.DBFile
+import com.shortsteplabs.shotsync.util.SettingsInterface
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -40,38 +41,54 @@ class SyncerTest {
 
     @Test
     fun shouldWrite() {
+        class Settings: SettingsInterface {
+            override val autoOff = true
+            override var autoSync = true
+            override val liveShooting = true
+            override var maintainUTC = true
+            override val syncFiles = true
+            override var syncGPS = true
+            override val syncPeriod = 0L
+            override val syncTime = true
+
+            override var syncJPG = false
+            override var syncRAW = false
+            override var syncVID = false
+        }
+
+        val settings = Settings()
         val camera = Camera()
-        val syncer = Syncer(SyncService(), camera)
+        val syncer = Syncer(SyncService(), settings, camera)
         val file = DBFile()
 
         file.extension = "jpg"
-        camera.syncJPG = true
+        settings.syncJPG = true
         assertEquals(true, syncer.shouldWrite(file))
-        camera.syncJPG = false
+        settings.syncJPG = false
         assertEquals(false, syncer.shouldWrite(file))
 
         file.extension = "orf"
-        camera.syncRAW = true
+        settings.syncRAW = true
         assertEquals(true, syncer.shouldWrite(file))
-        camera.syncRAW = false
+        settings.syncRAW = false
         assertEquals(false, syncer.shouldWrite(file))
 
         file.extension = "dng"
-        camera.syncRAW = true
+        settings.syncRAW = true
         assertEquals(true, syncer.shouldWrite(file))
-        camera.syncRAW = false
+        settings.syncRAW = false
         assertEquals(false, syncer.shouldWrite(file))
 
         file.extension = "avi"
-        camera.syncVID = true
+        settings.syncVID = true
         assertEquals(true, syncer.shouldWrite(file))
-        camera.syncVID = false
+        settings.syncVID = false
         assertEquals(false, syncer.shouldWrite(file))
 
         file.extension = "txt"
-        camera.syncJPG = true
-        camera.syncRAW = true
-        camera.syncVID = true
+        settings.syncJPG = true
+        settings.syncRAW = true
+        settings.syncVID = true
         assertEquals(false, syncer.shouldWrite(file))
     }
 
