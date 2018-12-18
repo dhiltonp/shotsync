@@ -207,7 +207,7 @@ class Syncer(val syncService: SyncService, val settings: SettingsInterface, val 
     private fun downloadFile(file: OlyEntry): Boolean {
         var partial: File
         for (i in 0 until 3) {
-            partial = getPublicFile(file.filename + ".partial")
+            partial = getPublicFile(file.filename + ".partial", file.extension)
             OlyInterface.download(client, file, partial)
             if (partial.length() != file.bytes) {
                 Log.e(TAG, "${file.filename}: downloaded vs. expected bytes don't match: ${partial.length()} vs. ${file.bytes}")
@@ -258,13 +258,19 @@ class Syncer(val syncService: SyncService, val settings: SettingsInterface, val 
 
     private fun moveDownload(resource: OlyEntry, partial: File): File {
         // verify downloadFiles, move to position, update entry
-        val file = getPublicFile(resource.filename)
+        val file = getPublicFile(resource.filename, resource.extension)
         Log.d(TAG, "${resource.filename} downloaded, " + partial.length() + " bytes")
         partial.renameTo(file)
         return file
     }
 
-    private fun getPublicFile(filename: String, dir: String=Environment.DIRECTORY_PICTURES): File {
+    private fun getPublicFile(filename: String, extension: String): File {
+        val dir = if (extension.toUpperCase() in vid) {
+            Environment.DIRECTORY_MOVIES
+        } else {
+            Environment.DIRECTORY_PICTURES
+        }
+
         val path = File(Environment.getExternalStoragePublicDirectory(dir), "ShotSync")
         if (!path.exists()) {
             if (!path.mkdirs()) {
