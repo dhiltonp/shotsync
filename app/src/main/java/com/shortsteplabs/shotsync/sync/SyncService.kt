@@ -77,11 +77,11 @@ class SyncService : ManualIntentService("SyncService") {
     }
 
     companion object {
-        private val TAG = "SyncService"
-        private val ACTION_START_SYNC = "com.shortsteplabs.shotsync.action.START_SYNC"
-        private val ACTION_START_AUTO_SYNC = "com.shortsteplabs.shotsync.action.START_AUTO_SYNC"
-        private val ACTION_STOP_SYNC = "com.shortsteplabs.shotsync.action.STOP_SYNC"
-        private val ACTION_CANCEL_SYNC = "com.shortsteplabs.shotsync.action.CANCEL_SYNC"
+        private const val TAG = "SyncService"
+        private const val ACTION_START_SYNC = "com.shortsteplabs.shotsync.action.START_SYNC"
+        private const val ACTION_START_AUTO_SYNC = "com.shortsteplabs.shotsync.action.START_AUTO_SYNC"
+        private const val ACTION_STOP_SYNC = "com.shortsteplabs.shotsync.action.STOP_SYNC"
+        private const val ACTION_CANCEL_SYNC = "com.shortsteplabs.shotsync.action.CANCEL_SYNC"
 
         fun syncIntent(context: Context): PendingIntent {
             val intent = Intent(context, SyncService::class.java)

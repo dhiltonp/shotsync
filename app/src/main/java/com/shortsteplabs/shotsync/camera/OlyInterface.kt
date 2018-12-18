@@ -29,7 +29,7 @@ import java.util.*
 
 
 // https://en.wikipedia.org/wiki/Design_rule_for_Camera_File_system - defines clustering?
-class OlyEntry constructor(val entry: String, tzOffset: Long) : Comparable<OlyEntry> {
+class OlyEntry constructor(entry: String, tzOffset: Long) : Comparable<OlyEntry> {
     val split = entry.split(',')
     val dirname= split[0]
     val filename = split[1]
@@ -46,17 +46,17 @@ class OlyEntry constructor(val entry: String, tzOffset: Long) : Comparable<OlyEn
     //    11297, 11329, 11361, 11393, 11425, 11457, 11489, 11521, 11553, 11585, 11585, 11617, 11649, 11809
     // We do not know if the camera timezone is identical to the phone timezone :/
     //  In fact, the time is automatically set from the phone every time OIShare is connected.
-    val sortdate = split[4].toInt()
+    val sortDate = split[4].toInt()
 
     // each tick = 2 seconds. 32 are allocated to each minute, 2048 are allocated to each hour.
-    val sorttime = split[5].toInt()
+    val sortTime = split[5].toInt()
 
-    val year = 1980 + sortdate / 512
-    val month = (sortdate % 512) / 32
-    val day = (sortdate % 32)
-    val hour = sorttime / 2048
-    val minute = (sorttime % 2048) / 32
-    val second = (sorttime % 32) * 2
+    val year = 1980 + sortDate / 512
+    val month = (sortDate % 512) / 32
+    val day = (sortDate % 32)
+    val hour = sortTime / 2048
+    val minute = (sortTime % 2048) / 32
+    val second = (sortTime % 32) * 2
 
     init {
         val cal = GregorianCalendar(year, month-1, day, hour, minute, second)
@@ -71,15 +71,15 @@ class OlyEntry constructor(val entry: String, tzOffset: Long) : Comparable<OlyEn
     }
 
     override fun compareTo(other: OlyEntry) = when {
-        sortdate != other.sortdate -> sortdate - other.sortdate
-        sorttime != other.sorttime -> sorttime - other.sorttime
+        sortDate != other.sortDate -> sortDate - other.sortDate
+        sortTime != other.sortTime -> sortTime - other.sortTime
         filename != other.filename -> filename.compareTo(other.filename)
         else -> 0
     }
 }
 
 object OlyInterface {
-    private val TAG = "OlyInterface"
+    private const val TAG = "OlyInterface"
 
     /**
      * returns all resources found, ordered from oldest to newest.
@@ -244,7 +244,7 @@ $OLACC,-1007.1,-3.6,4.7 // Acceleration (vector, 1G down)
 
     private fun listDir(client: HttpHelper, path: String, tzOffset: Long): List<OlyEntry> {
         Log.d(TAG, "listDir")
-        val response = client.get("http://192.168.0.10/get_imglist.cgi?DIR="+path)
+        val response = client.get("http://192.168.0.10/get_imglist.cgi?DIR=$path")
         Log.d(TAG, "converting to file entries")
         val split = response.trim().split("\r\n")
         val entries = split.slice(1 until split.size).map { line -> OlyEntry(line, tzOffset) }

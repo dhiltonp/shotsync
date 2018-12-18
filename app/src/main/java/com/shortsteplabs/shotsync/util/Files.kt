@@ -35,7 +35,7 @@ fun filesExist(context: Context): Boolean {
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
                 "ShotSync")
 
-        return path.exists() && path.listFiles().size > 0
+        return path.exists() && path.listFiles().isNotEmpty()
     }
 
     return false

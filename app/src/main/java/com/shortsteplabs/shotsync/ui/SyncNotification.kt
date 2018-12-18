@@ -28,11 +28,14 @@ import com.shortsteplabs.shotsync.sync.ManualIntentService
  */
 
 class SyncNotification(val service: ManualIntentService) {
-    val TAG = "SyncNotification"
     private val CHANNEL_ID = TAG
     private val DOWNLOAD_NOTIFICATION_ID = 21
-    private val ERROR_NOTIFICATION_TAG = TAG +" error"
+    private val ERROR_NOTIFICATION_TAG = "$TAG error"
     private var errorID = 1_234_789
+
+    companion object {
+        const val TAG = "SyncNotification"
+    }
 
     init {
         if (Build.VERSION.SDK_INT >= 26) {

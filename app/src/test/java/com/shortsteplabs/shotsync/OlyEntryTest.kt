@@ -50,16 +50,16 @@ class OlyEntryTest {
 
     @Test
     fun getSortdate() {
-        assertEquals(19347, DIR.sortdate)
-        assertEquals(19582, ORF.sortdate)
-        assertEquals(19349, JPG.sortdate)
+        assertEquals(19347, DIR.sortDate)
+        assertEquals(19582, ORF.sortDate)
+        assertEquals(19349, JPG.sortDate)
     }
 
     @Test
     fun getSorttime() {
-        assertEquals(43969, DIR.sorttime)
-        assertEquals(31629, ORF.sorttime)
-        assertEquals(26638, JPG.sorttime)
+        assertEquals(43969, DIR.sortTime)
+        assertEquals(31629, ORF.sortTime)
+        assertEquals(26638, JPG.sortTime)
     }
 
     private val jan1_2002 = OlyEntry(",,0,0,11297,0", 0)

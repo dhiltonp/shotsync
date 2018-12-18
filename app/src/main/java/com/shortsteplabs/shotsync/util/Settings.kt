@@ -43,7 +43,7 @@ interface SettingsInterface {
 //  then apply local changes on top as necessary...
 
 class Settings(val context: Context): SettingsInterface {
-    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+    val prefs = PreferenceManager.getDefaultSharedPreferences(context)!!
     var async = false
 
     fun registerChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {

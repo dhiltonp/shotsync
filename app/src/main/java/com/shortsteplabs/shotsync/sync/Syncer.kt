@@ -96,7 +96,7 @@ class Syncer(val syncService: SyncService, val settings: SettingsInterface, val 
     }
 
     private fun enableShooting(): Boolean {
-        if (settings.liveShooting == true) {
+        if (settings.liveShooting) {
             notification.status("Syncing with ${camera.model}", "Enabling shooting")
             OlyInterface.enableShooting(client)
             return true
@@ -144,7 +144,7 @@ class Syncer(val syncService: SyncService, val settings: SettingsInterface, val 
             }
         }
 
-        if (dbFiles.size == 0) {
+        if (dbFiles.isEmpty()) {
             notification.status("Syncing with ${camera.model}", "No new files to download!")
             return
         }
@@ -179,15 +179,14 @@ class Syncer(val syncService: SyncService, val settings: SettingsInterface, val 
     }
 
     fun canWrite(bytes: Long): Boolean {
-        val error: String
-        if (!hasWritePermission()) {
-            error = "Storage permission not granted!"
+        val error: String = if (!hasWritePermission()) {
+            "Storage permission not granted!"
         } else if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
-            error = "Media not mounted!"
+            "Media not mounted!"
         } else if (bytes > bytesAvailable()) {
-            error = "Low on storage!"
+            "Low on storage!"
         } else if (bytes > 4294967295) { // 4GB, 2^32-1. TODO: detect actual limit
-            error = "File too large!"
+            "File too large!"
         } else {
             return true
         }

@@ -66,7 +66,7 @@ import android.support.annotation.WorkerThread;
 public abstract class ManualIntentService extends Service {
     private volatile Looper mServiceLooper;
     private volatile ServiceHandler mServiceHandler;
-    private String mName;
+    private final String mName;
     private boolean mRedelivery;
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
