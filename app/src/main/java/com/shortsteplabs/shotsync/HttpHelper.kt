@@ -35,7 +35,11 @@ class HttpHelper {
                 .build()
         try {
             val response = client.newCall(request).execute()
-            return response.body()!!.string()
+            if (response.isSuccessful) {
+                return response.body()!!.string()
+            } else {
+                throw java.lang.Exception("get not successful: ${response.code()}")
+            }
         } catch (e: Exception) {
             Log.e(TAG, e.toString())
             throw NoConnection(e.toString())
