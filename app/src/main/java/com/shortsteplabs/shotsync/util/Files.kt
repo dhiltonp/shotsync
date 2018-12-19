@@ -46,14 +46,14 @@ open class RecursiveDelete:AsyncTask<Activity, Long, Long>() {
     var bytes = 0L
 
     override fun doInBackground(vararg params: Activity): Long {
-        val path = File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                "ShotSync")
-
-        if (path.exists()) {
-            return delete(path)
+        val dirs = listOf(Environment.DIRECTORY_PICTURES, Environment.DIRECTORY_MOVIES)
+        for (dir in dirs) {
+            val path = File(Environment.getExternalStoragePublicDirectory(dir), "ShotSync")
+            if (path.exists()) {
+                delete(path)
+            }
         }
-        return 0
+        return bytes
     }
 
     fun delete(path: File): Long {
