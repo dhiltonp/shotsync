@@ -254,7 +254,16 @@ $OLACC,-1007.1,-3.6,4.7 // Acceleration (vector, 1G down)
 
     private fun listDirWeb(client: HttpHelper, path: String, tzOffset: Long): List<OlyEntry> {
         Log.d(TAG, "listDir")
-        val r = client.get("http://192.168.0.10/$path")
+        val r = try {
+            client.get("http://192.168.0.10/$path")
+        } catch (e: HttpHelper.NoConnection) {
+            if (e.code == 404) { // no files, or no camera... btw, 520=camera api is busy
+                Log.d(TAG, "404, may be connected with 0 files")
+                return emptyList()
+            }
+            throw e
+        }
+
         Log.d(TAG, "converting to file entries")
 
         val keepers = mutableListOf<OlyEntry>()

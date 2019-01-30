@@ -26,7 +26,7 @@ class HttpHelper {
     val TAG="HttpHelper"
     val client = OkHttpClient()
 
-    class NoConnection(override var message:String): Exception(message)
+    class NoConnection(override var message:String, var code:Int): Exception(message)
 
     fun get(url: String): String {
         Log.d(TAG, "get $url")
@@ -38,11 +38,11 @@ class HttpHelper {
             if (response.isSuccessful) {
                 return response.body()!!.string()
             } else {
-                throw java.lang.Exception("get not successful: ${response.code()}")
+                throw NoConnection("GET not successful: ${response.code()}", response.code())
             }
         } catch (e: Exception) {
             Log.e(TAG, e.toString())
-            throw NoConnection(e.toString())
+            throw e
         }
     }
 
@@ -71,7 +71,7 @@ class HttpHelper {
 //                Log.d(TAG, "bytes written")
             } catch (e: java.net.ProtocolException) {
                 Log.d(TAG, "NoConnection")
-                throw NoConnection(e.toString())
+                throw NoConnection(e.toString(), -1)
             }
         }
     }
