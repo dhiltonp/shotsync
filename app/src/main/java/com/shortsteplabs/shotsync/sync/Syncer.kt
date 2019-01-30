@@ -234,7 +234,14 @@ class Syncer(val syncService: SyncService, val settings: SettingsInterface, val 
             values.put(MediaStore.Images.ImageColumns.LATITUDE, loc.latitude)
             values.put(MediaStore.Images.ImageColumns.LONGITUDE, loc.longitude)
         }
-        syncService.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+
+        val store = if (resource.extension.toUpperCase() in vid) {
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+        } else {
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        }
+
+        syncService.contentResolver.insert(store, values)
     }
 
     data class Loc(val latitude: Double, val longitude: Double)
