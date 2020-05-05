@@ -70,7 +70,7 @@ class Settings(val context: Context): SettingsInterface {
     }
 
     override val syncPeriod: Long
-        get() = prefs.getString(context.getString(R.string.sync_period_key), "86400000").toLong()
+        get() = prefs.getString(context.getString(R.string.sync_period_key), "86400000")!!.toLong()
 
     override val syncFiles: Boolean
         get() = syncJPG || syncRAW || syncVID

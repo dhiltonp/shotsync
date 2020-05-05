@@ -1,6 +1,6 @@
 package com.shortsteplabs.shotsync.db
 
-import android.arch.persistence.room.*
+import androidx.room.*
 
 /**
  * Copyright (C) 2018  David Hilton <david.hilton.p@gmail.com>

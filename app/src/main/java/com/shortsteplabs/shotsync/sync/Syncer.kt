@@ -6,7 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Environment
 import android.os.StatFs
 import android.provider.MediaStore
-import android.support.v4.app.ActivityCompat
+import androidx.core.app.ActivityCompat
 import android.util.Log
 import android.webkit.MimeTypeMap
 import com.shortsteplabs.shotsync.HttpHelper

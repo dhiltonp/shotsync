@@ -11,9 +11,9 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
-import android.support.v4.app.ActivityCompat
-import android.support.v4.app.FragmentActivity
-import android.support.v7.app.AlertDialog
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.FragmentActivity
+import androidx.appcompat.app.AlertDialog
 
 /**
 * Copyright (C) 2018  David Hilton <david.hilton.p@gmail.com>

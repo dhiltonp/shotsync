@@ -11,8 +11,8 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
 import android.os.IBinder
-import android.support.annotation.RequiresApi
-import android.support.v4.app.NotificationCompat
+import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat
 import android.util.Log
 import com.shortsteplabs.shotsync.R
 import com.shortsteplabs.shotsync.sync.SyncService

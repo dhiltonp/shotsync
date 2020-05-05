@@ -6,7 +6,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.AsyncTask
 import android.os.Environment
-import android.support.v4.app.ActivityCompat
+import androidx.core.app.ActivityCompat
 import java.io.File
 
 

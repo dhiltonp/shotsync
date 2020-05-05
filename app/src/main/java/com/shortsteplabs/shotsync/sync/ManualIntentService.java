@@ -22,8 +22,8 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.Nullable;
-import android.support.annotation.WorkerThread;
+import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 
 /**
  * ManualIntentService modifies IntentService so that it does not automatically
@@ -49,7 +49,7 @@ import android.support.annotation.WorkerThread;
  * <p class="note"><b>Note:</b> ManualIntentService is subject to all the
  * <a href="/preview/features/background.html">background execution limits</a>
  * imposed with Android 8.0 (API level 26). In most cases, you are better off
- * using {@link android.support.v4.app.JobIntentService}, which uses jobs
+ * using {@link androidx.core.app.JobIntentService}, which uses jobs
  * instead of services when running on Android 8.0 or higher.
  * </p>
  *
@@ -60,7 +60,7 @@ import android.support.annotation.WorkerThread;
  * guide.</p>
  * </div>
  *
- * @see android.support.v4.app.JobIntentService
+ * @see androidx.core.app.JobIntentService
  * @see android.os.AsyncTask
  */
 public abstract class ManualIntentService extends Service {
