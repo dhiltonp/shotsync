@@ -9,7 +9,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Copyright (C) 2018  David Hilton <david.hilton.p></david.hilton.p>@gmail.com>
+ * Copyright (C) 2018  David Hilton <david.hilton.p@gmail.com>
  *
  *
  * This program is free software: you can redistribute it and/or modify
