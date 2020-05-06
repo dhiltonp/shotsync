@@ -17,3 +17,12 @@ downloadLoop - add 'concurrent' mode (then add switching via the notification)
 remote - add remote activity
 make files show up in 'Images'? or under 'Pictures'?
 add deletion (including from mediastore) and storage cap setting
+
+----------------
+
+embed browser for file picker DL?
+
+----
+
+Sync with E-M5 III/E-M1 III/E-M1x? (breaks background sync/file picker?)
+embed geotag info into file, not just android store
